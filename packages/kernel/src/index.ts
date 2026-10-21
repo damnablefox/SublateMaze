@@ -1,5 +1,7 @@
 import { Context } from '@deepseek-ai/cordis'
 import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { parse } from 'yaml'
 import { PluginPatchSchema, type PluginRow } from './schema.ts'
 
@@ -40,7 +42,14 @@ export async function createKernel(profilePath: string): Promise<Kernel> {
     }
 
     try {
-      const mod = await import(row.name)
+      // 打包后插件是 out/plugins 下的 JS bundle；开发态仍直接加载 TS 源码。
+      const pluginDir = process.env.SUBLATE_PLUGIN_DIR
+      const specifier =
+        pluginDir && row.name.startsWith('@bundled/')
+          ? pathToFileURL(join(pluginDir, `${row.name.slice('@bundled/'.length)}.mjs`)).href
+          : row.name
+
+      const mod = await import(specifier)
       if (typeof mod.apply !== 'function') {
         throw new Error(`插件 ${row.name} 未导出 apply(ctx, config)`)
       }

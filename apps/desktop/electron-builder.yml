@@ -1,0 +1,34 @@
+appId: com.sublate.maze
+productName: SublateMaze
+copyright: Copyright © 2026 SublateMaze
+
+directories:
+  app: ../../.pack/app
+  output: ../../.pack/dist
+
+asar: true
+npmRebuild: false
+electronDist: ../../node_modules/.pnpm/electron@45.0.0/node_modules/electron/dist
+
+files:
+  - '**/*'
+  - '!**/*.map'
+
+asarUnpack:
+  - '**/*.node'
+  - node_modules/@lancedb/**
+
+extraResources:
+  - from: ../../crates/sublate-native/sublate-native.win32-x64-msvc.node
+    to: native/sublate-native.win32-x64-msvc.node
+  - from: out/plugins/cordis.yml
+    to: profiles/default/cordis.yml
+  - from: build-info.json
+    to: build-info.json
+
+win:
+  target:
+    - target: zip
+      arch:
+        - x64
+  artifactName: SublateMaze-${version}-windows-x64-portable.${ext}

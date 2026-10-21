@@ -5,6 +5,8 @@ out/
 build/
 target/
 coverage/
+.cache/
+.pack/
 *.tsbuildinfo
 
 # 原生模块与打包资源
@@ -12,6 +14,7 @@ coverage/
 crates/sublate-native/index.js
 crates/sublate-native/index.d.ts
 apps/desktop/.electron-data/
+apps/desktop/build-info.json
 apps/desktop/src/renderer/public/pdfjs/
 apps/desktop/resources/python/
 apps/desktop/release/

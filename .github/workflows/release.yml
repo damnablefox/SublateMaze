@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: 安装 Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 缓存 Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建原生模块
+        run: pnpm build:native
+
+      - name: 生成构建信息
+        run: node scripts/write-build-info.mjs
+
+      - name: 构建 Electron 应用
+        run: pnpm --filter @sublate/desktop build
+
+      - name: 打包插件 bundle
+        run: node scripts/bundle-plugins.mjs
+
+      - name: 打包便携版
+        run: pnpm --filter @sublate/desktop exec electron-builder --win zip --config electron-builder.yml
+
+      - name: 上传 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apps/desktop/dist/*.zip
+          generate_release_notes: true

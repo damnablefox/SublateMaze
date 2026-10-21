@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { createReadStream } from 'node:fs'
+import { createReadStream, existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -19,18 +19,32 @@ interface RustBinding {
   nativeVersion(): string
 }
 
-/** 开发态下发现在 crate 目录；打包后的路径在 M6 处理。 */
+/** 开发态在 crate 目录，打包后在 resources/native；两者都找不到时降级。 */
 function loadRustBinding(): RustBinding | undefined {
-  try {
-    const require = createRequire(import.meta.url)
-    const nodePath = resolve(
+  const require = createRequire(import.meta.url)
+  const candidates: string[] = []
+
+  if (process.env.SUBLATE_NATIVE_PATH) candidates.push(process.env.SUBLATE_NATIVE_PATH)
+  if (process.resourcesPath) {
+    candidates.push(resolve(process.resourcesPath, 'native', 'sublate-native.win32-x64-msvc.node'))
+  }
+  candidates.push(
+    resolve(
       dirname(fileURLToPath(import.meta.url)),
       '../../../../crates/sublate-native/sublate-native.win32-x64-msvc.node',
-    )
-    return require(nodePath) as RustBinding
-  } catch {
-    return undefined
+    ),
+  )
+
+  for (const nodePath of candidates) {
+    try {
+      if (!existsSync(nodePath)) continue
+      return require(nodePath) as RustBinding
+    } catch {
+      // 尝试下一个候选路径
+    }
   }
+
+  return undefined
 }
 
 function hashFileWithNode(path: string): Promise<string> {
