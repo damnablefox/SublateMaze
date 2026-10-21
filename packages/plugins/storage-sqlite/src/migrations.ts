@@ -67,3 +67,21 @@ CREATE VIRTUAL TABLE IF NOT EXISTS carrier_pages_fts USING fts5(
   tokenize = 'unicode61'
 );
 `
+
+/** 迁移 003：AI 调用记录，用于成本统计与故障排查。 */
+export const MIGRATION_003 = `
+CREATE TABLE IF NOT EXISTS ai_calls (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  provider TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  model TEXT NOT NULL,
+  status TEXT NOT NULL,
+  prompt_tokens INTEGER NOT NULL DEFAULT 0,
+  completion_tokens INTEGER NOT NULL DEFAULT 0,
+  duration_ms INTEGER NOT NULL DEFAULT 0,
+  error TEXT,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_calls_created ON ai_calls (created_at);
+`

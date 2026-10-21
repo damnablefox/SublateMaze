@@ -10,7 +10,7 @@ importers:
     devDependencies:
       '@napi-rs/cli':
         specifier: ^3.10.8
-        version: 3.10.8(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@24.19.2)
+        version: 3.10.8(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.19.2)
       '@stylistic/eslint-plugin':
         specifier: 5.10.0
         version: 5.10.0(eslint@10.13.0)
@@ -23,6 +23,9 @@ importers:
       '@sublate/plugin-agent':
         specifier: workspace:*
         version: link:packages/plugins/agent
+      '@sublate/plugin-ai-provider':
+        specifier: workspace:*
+        version: link:packages/plugins/ai-provider
       '@sublate/plugin-demo':
         specifier: workspace:*
         version: link:packages/plugins/demo
@@ -89,6 +92,9 @@ importers:
       '@sublate/plugin-agent':
         specifier: workspace:*
         version: link:../../packages/plugins/agent
+      '@sublate/plugin-ai-provider':
+        specifier: workspace:*
+        version: link:../../packages/plugins/ai-provider
       '@sublate/plugin-demo':
         specifier: workspace:*
         version: link:../../packages/plugins/demo
@@ -196,6 +202,15 @@ importers:
         version: 4.6.7
 
   packages/plugins/agent:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: 4.0.5
+        version: 4.0.5(@deepseek-ai/cordis-plugin-include@1.0.10)(@deepseek-ai/cordis-plugin-loader@1.0.6)
+      '@sublate/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../plugin-sdk
+
+  packages/plugins/ai-provider:
     dependencies:
       '@deepseek-ai/cordis':
         specifier: 4.0.5
@@ -4035,7 +4050,7 @@ snapshots:
       '@napi-rs/canvas-win32-x64-msvc': 1.0.13
     optional: true
 
-  '@napi-rs/cli@3.10.8(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@24.19.2)':
+  '@napi-rs/cli@3.10.8(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.19.2)':
     dependencies:
       '@inquirer/prompts': 8.7.4(@types/node@24.19.2)
       '@napi-rs/cross-toolchain': 1.0.3
@@ -4050,8 +4065,8 @@ snapshots:
       typanion: 3.14.0
       typescript: 6.0.3
     optionalDependencies:
-      '@emnapi/core': 1.11.2
-      '@emnapi/runtime': 1.11.2
+      '@emnapi/core': 1.9.2
+      '@emnapi/runtime': 1.9.2
     transitivePeerDependencies:
       - '@napi-rs/cross-toolchain-arm64-target-aarch64'
       - '@napi-rs/cross-toolchain-arm64-target-armv7'

@@ -4,7 +4,7 @@
 
 把书籍、论文、课程、网页等“知识载体”沉淀为可检索、可定位的知识库，拆解为知识点与知识单元，组织成课程与学习目标，再用记忆模型生成每日计划并持续量化掌握程度。
 
-> 当前状态：**M1 知识库、导入与阅读已完成**。可导入 PDF 与网页、按内容哈希去重、在应用内阅读 PDF 并记住阅读位置、用 FTS5 检索正文、回收站软删除与恢复。13 个插件在应用中全部 running。
+> 当前状态：**M1 知识库、导入与阅读已完成**；**M2 进行中**，AI Provider（Provider 中立的 chat/embed 接口、DeepSeek 适配、调用成本记录）已接入。14 个插件在应用中全部 running。
 
 ## 核心设计
 
@@ -22,6 +22,17 @@
 - SQLite FTS5 全文检索，中文按短语匹配并定位到页码；
 - 阅读位置持久化，重启后回到上次页码；
 - 回收站：软删除与恢复。
+
+## AI 配置（M2）
+
+通过环境变量配置，未设置 Key 时 AI 能力自动降级，不影响其它功能：
+
+```powershell
+$env:DEEPSEEK_API_KEY = '...'                     # 或 SUBLATE_AI_API_KEY
+$env:SUBLATE_AI_CHAT_MODEL = 'deepseek-chat'      # 可选
+$env:SUBLATE_AI_EMBEDDING_MODEL = '...'           # 可选，OpenAI 兼容的向量模型
+$env:SUBLATE_AI_EMBEDDING_DIM = '1024'
+```
 
 详细方案见工作区 `分析文档/SublateMaze-项目工程方案.md`。
 

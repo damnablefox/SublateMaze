@@ -2,9 +2,11 @@ import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
+import { AiCallStore } from './ai-calls.ts'
 import { CarrierStore } from './carriers.ts'
-import { MIGRATION_001, MIGRATION_002 } from './migrations.ts'
+import { MIGRATION_001, MIGRATION_002, MIGRATION_003 } from './migrations.ts'
 
+export * from './ai-calls.ts'
 export * from './carriers.ts'
 
 export const name = 'storage-sqlite'
@@ -24,6 +26,7 @@ export interface StorageConfig {
 export class SqliteService {
   readonly db: DatabaseSync
   readonly carriers: CarrierStore
+  readonly aiCalls: AiCallStore
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
@@ -31,6 +34,7 @@ export class SqliteService {
     this.db.exec('PRAGMA journal_mode = WAL')
     this.db.exec('PRAGMA foreign_keys = ON')
     this.carriers = new CarrierStore(this.db)
+    this.aiCalls = new AiCallStore(this.db)
     this.migrate()
   }
 
@@ -42,6 +46,7 @@ export class SqliteService {
 
     if (version < 1) this.runMigration(MIGRATION_001, 1)
     if (version < 2) this.runMigration(MIGRATION_002, 2)
+    if (version < 3) this.runMigration(MIGRATION_003, 3)
   }
 
   private runMigration(sql: string, targetVersion: number): void {

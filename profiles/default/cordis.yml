@@ -24,6 +24,8 @@
       name: '@sublate/plugin-demo'
     - id: ipc-bridge
       name: '@sublate/plugin-ipc-bridge'
+    - id: ai-provider
+      name: '@sublate/plugin-ai-provider'
     - id: parser
       name: '@sublate/plugin-parser'
     - id: importer

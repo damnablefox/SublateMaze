@@ -16,6 +16,7 @@
     "@deepseek-ai/cordis": "4.0.5",
     "@sublate/kernel": "workspace:*",
     "@sublate/plugin-agent": "workspace:*",
+    "@sublate/plugin-ai-provider": "workspace:*",
     "@sublate/plugin-demo": "workspace:*",
     "@sublate/plugin-importer": "workspace:*",
     "@sublate/plugin-ipc-bridge": "workspace:*",
