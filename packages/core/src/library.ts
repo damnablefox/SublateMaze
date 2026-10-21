@@ -83,3 +83,60 @@ export function splitWebPages(text: string, targetChars = 1200): string[] {
 
   return pages.length > 0 ? pages : [text.trim()].filter(value => value.length > 0)
 }
+
+export interface ChunkDraft {
+  pageNo: number
+  chunkNo: number
+  text: string
+}
+
+/** 段落与句末标点优先作为 chunk 断点。 */
+const CHUNK_BREAKS = ['\n\n', '\n', '。', '！', '？', '；', '.', '!', '?', ';']
+
+/**
+ * 把页文本切成约 targetChars 的 chunk，块间保留 overlapChars 的重叠。
+ *
+ * 页码与块号留在草稿里，写入 SQLite 时再分配稳定 id。
+ */
+export function chunkPages(
+  pages: { pageNo: number; text: string }[],
+  targetChars = 900,
+  overlapChars = 120,
+): ChunkDraft[] {
+  const drafts: ChunkDraft[] = []
+
+  for (const page of pages) {
+    const text = page.text.trim()
+    if (!text) continue
+
+    let start = 0
+    let chunkNo = 1
+
+    while (start < text.length) {
+      const end = Math.min(text.length, start + targetChars)
+      let cut = end
+
+      if (end < text.length) {
+        let best = -1
+        for (const mark of CHUNK_BREAKS) {
+          const index = text.lastIndexOf(mark, end)
+          if (index > best) best = index
+        }
+        if (best > start + Math.floor(targetChars * 0.6)) {
+          cut = best + 1
+        }
+      }
+
+      const piece = text.slice(start, cut).trim()
+      if (piece) {
+        drafts.push({ pageNo: page.pageNo, chunkNo, text: piece })
+        chunkNo += 1
+      }
+
+      if (cut >= text.length) break
+      start = Math.max(cut - overlapChars, start + 1)
+    }
+  }
+
+  return drafts
+}

@@ -4,10 +4,12 @@ import { dirname, resolve } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import { AiCallStore } from './ai-calls.ts'
 import { CarrierStore } from './carriers.ts'
-import { MIGRATION_001, MIGRATION_002, MIGRATION_003 } from './migrations.ts'
+import { ChunkStore } from './chunks.ts'
+import { MIGRATION_001, MIGRATION_002, MIGRATION_003, MIGRATION_004 } from './migrations.ts'
 
 export * from './ai-calls.ts'
 export * from './carriers.ts'
+export * from './chunks.ts'
 
 export const name = 'storage-sqlite'
 export const inject: string[] = []
@@ -26,6 +28,7 @@ export interface StorageConfig {
 export class SqliteService {
   readonly db: DatabaseSync
   readonly carriers: CarrierStore
+  readonly chunks: ChunkStore
   readonly aiCalls: AiCallStore
 
   constructor(dbPath: string) {
@@ -34,6 +37,7 @@ export class SqliteService {
     this.db.exec('PRAGMA journal_mode = WAL')
     this.db.exec('PRAGMA foreign_keys = ON')
     this.carriers = new CarrierStore(this.db)
+    this.chunks = new ChunkStore(this.db)
     this.aiCalls = new AiCallStore(this.db)
     this.migrate()
   }
@@ -47,6 +51,7 @@ export class SqliteService {
     if (version < 1) this.runMigration(MIGRATION_001, 1)
     if (version < 2) this.runMigration(MIGRATION_002, 2)
     if (version < 3) this.runMigration(MIGRATION_003, 3)
+    if (version < 4) this.runMigration(MIGRATION_004, 4)
   }
 
   private runMigration(sql: string, targetVersion: number): void {

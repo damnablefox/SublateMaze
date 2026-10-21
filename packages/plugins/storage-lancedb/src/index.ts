@@ -31,6 +31,11 @@ export interface VectorStats {
   staleRows: number
 }
 
+/** SQL 字符串字面量转义；owner id 由主程序生成，转义只作防御。 */
+function escapeLiteral(value: string): string {
+  return value.replace(/'/g, "''")
+}
+
 /**
  * LanceDB 向量服务。
  *
@@ -100,6 +105,24 @@ export class VectorService {
     }
     // LanceDB 接受 Record 形状的对象；接口字段与 Arrow schema 一一对应。
     await this.requireTable().add(records as unknown as Record<string, unknown>[])
+  }
+
+  /** 删除某个 owner 下的全部向量；用于重建索引与载体清理。 */
+  async deleteByOwner(ownerType: string, ownerId: string): Promise<void> {
+    if (!this.table) return
+    await this.requireTable().delete(
+      `ownerType = '${escapeLiteral(ownerType)}' AND ownerId = '${escapeLiteral(ownerId)}'`,
+    )
+  }
+
+  /** 先删后写，保证同一载体重复索引不产生重复行。 */
+  async replaceByOwner(
+    ownerType: string,
+    ownerId: string,
+    records: VectorRecord[],
+  ): Promise<void> {
+    await this.deleteByOwner(ownerType, ownerId)
+    await this.upsert(records)
   }
 
   async query(vector: number[], topK = 10): Promise<(VectorRecord & { _distance: number })[]> {

@@ -56,6 +56,27 @@ describe('storage-lancedb', () => {
     service.close()
   })
 
+  it('按 owner 先删后写保持幂等', async () => {
+    const service = createService()
+    await service.init()
+
+    await service.replaceByOwner('carrier', 'c1', [
+      { id: 'x1', vector: [1, 0, 0, 0, 0, 0, 0, 0], ownerType: 'carrier', ownerId: 'c1' },
+      { id: 'x2', vector: [0, 1, 0, 0, 0, 0, 0, 0], ownerType: 'carrier', ownerId: 'c1' },
+    ])
+    expect((await service.stats()).rows).toBe(2)
+
+    await service.replaceByOwner('carrier', 'c1', [
+      { id: 'x3', vector: [0, 0, 1, 0, 0, 0, 0, 0], ownerType: 'carrier', ownerId: 'c1' },
+    ])
+    expect((await service.stats()).rows).toBe(1)
+
+    await service.deleteByOwner('carrier', 'c1')
+    expect((await service.stats()).rows).toBe(0)
+
+    service.close()
+  })
+
   it('重新打开后数据仍在', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'sublate-lance-'))
     tempDirs.push(dir)

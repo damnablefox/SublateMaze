@@ -76,6 +76,7 @@ describe('importer', () => {
     expect(carrier?.pageCount).toBe(1)
     expect(carrier?.file.relPath).toMatch(/^library\/[0-9a-f]{2}\/[0-9a-f]{2}\/[0-9a-f]{64}\.pdf$/)
     expect(existsSync(join(root, carrier!.file.relPath))).toBe(true)
+    expect(sqlite.chunks.listChunks(result!.carrierId!)).toHaveLength(1)
     expect(events).toEqual([
       { event: 'carrier/imported', payload: { carrierId: result!.carrierId } },
     ])

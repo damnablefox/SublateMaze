@@ -4,6 +4,7 @@ import { basename, dirname, extname } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import {
   carrierKindFromExt,
+  chunkPages,
   libraryRelPath,
   mimeFromExt,
   type CarrierKind,
@@ -58,6 +59,12 @@ interface CarrierStoreLike {
 
 interface DbLike {
   carriers: CarrierStoreLike
+  chunks: {
+    replaceChunks(
+      carrierId: string,
+      drafts: { pageNo: number; chunkNo: number; text: string }[],
+    ): unknown
+  }
 }
 
 interface NativeLike {
@@ -172,6 +179,7 @@ export class ImporterService {
         this.deps.db.carriers.setStatus(carrier.id, 'parsing')
         const parsed = await this.deps.parser.parsePdf(target, sha256)
         this.deps.db.carriers.replacePages(carrier.id, parsed.pages)
+        this.storeChunks(carrier.id, parsed.pages)
 
         if (parsed.title && parsed.title !== carrier.title) {
           this.deps.db.carriers.rename(carrier.id, parsed.title)
@@ -240,6 +248,7 @@ export class ImporterService {
         this.deps.db.carriers.setStatus(carrier.id, 'parsing')
         const parsed = await this.deps.parser.parseWebHtml(fetched.html, sha256, fallbackTitle)
         this.deps.db.carriers.replacePages(carrier.id, parsed.pages)
+        this.storeChunks(carrier.id, parsed.pages)
 
         if (parsed.title) {
           this.deps.db.carriers.rename(carrier.id, parsed.title)
@@ -272,6 +281,10 @@ export class ImporterService {
         error: errorMessage(error),
       }
     }
+  }
+
+  private storeChunks(carrierId: string, pages: { pageNo: number; text: string }[]): void {
+    this.deps.db.chunks.replaceChunks(carrierId, chunkPages(pages))
   }
 
   private resultFromCarrier(carrier: CarrierLike, duplicated: boolean): ImportResult {

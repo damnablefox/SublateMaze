@@ -85,3 +85,22 @@ CREATE TABLE IF NOT EXISTS ai_calls (
 
 CREATE INDEX IF NOT EXISTS idx_ai_calls_created ON ai_calls (created_at);
 `
+
+/** 迁移 004：载体 chunk 与 embedding 状态。 */
+export const MIGRATION_004 = `
+CREATE TABLE IF NOT EXISTS carrier_chunks (
+  id TEXT PRIMARY KEY,
+  carrier_id TEXT NOT NULL REFERENCES carriers (id) ON DELETE CASCADE,
+  page_no INTEGER NOT NULL,
+  chunk_no INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  embedding_status TEXT NOT NULL DEFAULT 'pending',
+  embedding_model TEXT,
+  error TEXT,
+  updated_at TEXT NOT NULL,
+  UNIQUE (carrier_id, page_no, chunk_no)
+);
+
+CREATE INDEX IF NOT EXISTS idx_carrier_chunks_carrier ON carrier_chunks (carrier_id);
+CREATE INDEX IF NOT EXISTS idx_carrier_chunks_status ON carrier_chunks (embedding_status);
+`
