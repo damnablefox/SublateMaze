@@ -20,6 +20,10 @@ interface EditorState {
   end: string
 }
 
+interface KnowledgePageProps {
+  onCreateNote?(point: KnowledgePoint): void
+}
+
 function statusLabel(status: KnowledgePoint['status']): string {
   if (status === 'confirmed') return '已确认'
   if (status === 'rejected') return '已拒绝'
@@ -39,7 +43,7 @@ function pageRange(unit: KnowledgeUnit): string {
     : `第 ${unit.pageStart}–${unit.pageEnd} 页`
 }
 
-export function KnowledgePage() {
+export function KnowledgePage({ onCreateNote }: KnowledgePageProps) {
   const [carriers, setCarriers] = useState<Carrier[]>([])
   const [carrierId, setCarrierId] = useState('')
   const [snapshot, setSnapshot] = useState<KnowledgeSnapshot>()
@@ -370,25 +374,36 @@ export function KnowledgePage() {
                       {statusLabel(point.status)}
                     </span>
 
-                    {point.status === 'draft' ? (
-                      <div className="point-actions">
+                    <div className="point-actions">
+                      {onCreateNote ? (
                         <button
                           className="button sm ghost"
                           type="button"
-                          onClick={() => startEdit(point, 'anchor')}
+                          onClick={() => onCreateNote(point)}
                         >
-                          锚点
+                          笔记
                         </button>
-                        <button
-                          className="button sm ghost"
-                          type="button"
-                          onClick={() => startEdit(point, 'split')}
-                          disabled={point.pageEnd <= point.pageStart}
-                        >
-                          拆分
-                        </button>
-                      </div>
-                    ) : null}
+                      ) : null}
+                      {point.status === 'draft' ? (
+                        <>
+                          <button
+                            className="button sm ghost"
+                            type="button"
+                            onClick={() => startEdit(point, 'anchor')}
+                          >
+                            锚点
+                          </button>
+                          <button
+                            className="button sm ghost"
+                            type="button"
+                            onClick={() => startEdit(point, 'split')}
+                            disabled={point.pageEnd <= point.pageStart}
+                          >
+                            拆分
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
                   </li>
                 ))}
               </ul>

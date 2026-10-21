@@ -5,6 +5,7 @@ import {
   KnowledgeIcon,
   LibraryIcon,
   MoonIcon,
+  NotesIcon,
   OverviewIcon,
   ReviewIcon,
   SunIcon,
@@ -18,6 +19,7 @@ export type SidebarView =
   | 'reviews'
   | 'library'
   | 'knowledge'
+  | 'notes'
   | 'courses'
   | 'overview'
   | 'agent'
@@ -41,6 +43,7 @@ const NAV_ITEMS: { view: SidebarView; label: string; Icon: typeof SunIcon }[] = 
   { view: 'reviews', label: '复习', Icon: ReviewIcon },
   { view: 'library', label: '知识库', Icon: LibraryIcon },
   { view: 'knowledge', label: '知识点', Icon: KnowledgeIcon },
+  { view: 'notes', label: '笔记', Icon: NotesIcon },
   { view: 'courses', label: '课程', Icon: CourseIcon },
   { view: 'overview', label: '进度', Icon: OverviewIcon },
   { view: 'agent', label: '助手', Icon: AgentIcon },
@@ -86,7 +89,7 @@ export function Sidebar({ active, themeMode, onNavigate, onThemeModeChange }: Si
             </button>
           ))}
         </div>
-        <span className="sidebar-version">M4 · Windows x64</span>
+        <span className="sidebar-version">M5 · Windows x64</span>
       </div>
     </aside>
   )

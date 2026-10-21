@@ -48,6 +48,16 @@ export function KnowledgeIcon({ size = 16 }: IconProps) {
   )
 }
 
+export function NotesIcon({ size = 16 }: IconProps) {
+  return (
+    <svg {...base(size)}>
+      <path d="M3.5 2.5h6l3 3v8h-9z" />
+      <path d="M9.5 2.5v3h3" />
+      <path d="M5.5 8h5M5.5 10.5h3.5" />
+    </svg>
+  )
+}
+
 export function TodayIcon({ size = 16 }: IconProps) {
   return (
     <svg {...base(size)}>

@@ -358,6 +358,59 @@ export interface SessionDetail {
   events: AgentEvent[]
 }
 
+export type NoteRefType = 'point' | 'carrier'
+
+export interface NoteRef {
+  refType: NoteRefType
+  refId: string
+}
+
+export interface NoteRecord {
+  id: string
+  title: string
+  titleKey: string
+  body: string
+  relPath: string
+  createdAt: string
+  updatedAt: string
+  deletedAt?: string
+  excerpt: string
+}
+
+export interface NoteSummary extends NoteRecord {
+  linkCount: number
+  backlinkCount: number
+  refs: NoteRef[]
+}
+
+export interface NoteLink {
+  noteId: string
+  targetTitle: string
+  targetKey: string
+  targetNoteId?: string
+  targetNoteTitle?: string
+}
+
+export interface NoteBacklink {
+  noteId: string
+  title: string
+  targetTitle: string
+  updatedAt: string
+  excerpt: string
+}
+
+export interface NoteDetail {
+  note: NoteRecord
+  links: NoteLink[]
+  backlinks: NoteBacklink[]
+  refs: NoteRef[]
+}
+
+export interface NoteRefOptions {
+  carriers: { id: string; title: string }[]
+  points: { id: string; title: string; carrierId: string; carrierTitle: string }[]
+}
+
 declare global {
   interface Window {
     sublate: {
@@ -439,6 +492,21 @@ declare global {
         cancel(sessionId: string): Promise<void>
         sessions(): Promise<SessionSummary[]>
         session(id: string): Promise<SessionDetail>
+      }
+      notes: {
+        list(options?: { includeDeleted?: boolean; query?: string }): Promise<NoteSummary[]>
+        trash(): Promise<NoteSummary[]>
+        detail(id: string): Promise<NoteDetail>
+        create(input: { title: string; body?: string; refs?: NoteRef[] }): Promise<NoteDetail>
+        update(
+          id: string,
+          patch: { title?: string; body?: string; refs?: NoteRef[] },
+        ): Promise<NoteDetail>
+        remove(id: string): Promise<void>
+        restore(id: string): Promise<NoteDetail>
+        purge(id: string): Promise<void>
+        forRef(refType: NoteRefType, refId: string): Promise<NoteRecord[]>
+        refOptions(): Promise<NoteRefOptions>
       }
     }
   }

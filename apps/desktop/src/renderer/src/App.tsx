@@ -4,6 +4,7 @@ import { AgentPage } from './pages/AgentPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { KnowledgePage } from './pages/KnowledgePage'
 import { LibraryPage } from './pages/LibraryPage'
+import { NotesPage } from './pages/NotesPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { ReaderPage } from './pages/ReaderPage'
 import { ReviewPage } from './pages/ReviewPage'
@@ -22,6 +23,7 @@ type View =
   | { name: 'reviews' }
   | { name: 'library' }
   | { name: 'knowledge' }
+  | { name: 'notes'; noteId?: string; ref?: { refType: 'point' | 'carrier'; refId: string; label: string } }
   | { name: 'courses' }
   | { name: 'overview' }
   | { name: 'agent' }
@@ -66,7 +68,20 @@ export function App() {
         ) : view.name === 'trash' ? (
           <TrashPage onBack={() => setView({ name: 'library' })} />
         ) : view.name === 'knowledge' ? (
-          <KnowledgePage />
+          <KnowledgePage
+            onCreateNote={point =>
+              setView({
+                name: 'notes',
+                ref: { refType: 'point', refId: point.id, label: point.title },
+              })
+            }
+          />
+        ) : view.name === 'notes' ? (
+          <NotesPage
+            key={view.ref ? `${view.ref.refType}:${view.ref.refId}` : view.noteId ?? 'notes'}
+            initialNoteId={view.noteId}
+            initialRef={view.ref}
+          />
         ) : view.name === 'courses' ? (
           <CoursesPage />
         ) : view.name === 'overview' ? (

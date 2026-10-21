@@ -1,5 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+interface NoteRefInput {
+  refType: 'point' | 'carrier'
+  refId: string
+}
+
 contextBridge.exposeInMainWorld('sublate', {
   getPlugins: () => ipcRenderer.invoke('kernel:plugins'),
   demoPing: () => ipcRenderer.invoke('kernel:demo-ping'),
@@ -93,5 +98,21 @@ contextBridge.exposeInMainWorld('sublate', {
     cancel: (sessionId: string) => ipcRenderer.invoke('agent:cancel', { sessionId }),
     sessions: () => ipcRenderer.invoke('agent:sessions', {}),
     session: (id: string) => ipcRenderer.invoke('agent:session', { id }),
+  },
+  notes: {
+    list: (options?: { includeDeleted?: boolean; query?: string }) =>
+      ipcRenderer.invoke('note:list', options ?? {}),
+    trash: () => ipcRenderer.invoke('note:trash', {}),
+    detail: (id: string) => ipcRenderer.invoke('note:detail', { id }),
+    create: (input: { title: string; body?: string; refs?: NoteRefInput[] }) =>
+      ipcRenderer.invoke('note:create', input),
+    update: (id: string, patch: { title?: string; body?: string; refs?: NoteRefInput[] }) =>
+      ipcRenderer.invoke('note:update', { id, ...patch }),
+    remove: (id: string) => ipcRenderer.invoke('note:delete', { id }),
+    restore: (id: string) => ipcRenderer.invoke('note:restore', { id }),
+    purge: (id: string) => ipcRenderer.invoke('note:purge', { id }),
+    forRef: (refType: 'point' | 'carrier', refId: string) =>
+      ipcRenderer.invoke('note:for-ref', { refType, refId }),
+    refOptions: () => ipcRenderer.invoke('note:ref-options', {}),
   },
 })
