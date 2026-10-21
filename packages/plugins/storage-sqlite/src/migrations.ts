@@ -152,3 +152,86 @@ CREATE INDEX IF NOT EXISTS idx_knowledge_points_carrier ON knowledge_points (car
 CREATE INDEX IF NOT EXISTS idx_knowledge_points_unit ON knowledge_points (unit_id);
 CREATE INDEX IF NOT EXISTS idx_knowledge_points_status ON knowledge_points (status);
 `
+
+/** 迁移 006：课程、单元、课程内编排、目标、计划与每日计划项。 */
+export const MIGRATION_006 = `
+CREATE TABLE IF NOT EXISTS courses (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'active',
+  daily_minutes INTEGER NOT NULL DEFAULT 30,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS course_units (
+  id TEXT PRIMARY KEY,
+  course_id TEXT NOT NULL REFERENCES courses (id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  position INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_course_units_course ON course_units (course_id);
+
+CREATE TABLE IF NOT EXISTS course_points (
+  id TEXT PRIMARY KEY,
+  course_id TEXT NOT NULL REFERENCES courses (id) ON DELETE CASCADE,
+  unit_id TEXT REFERENCES course_units (id) ON DELETE SET NULL,
+  point_id TEXT NOT NULL REFERENCES knowledge_points (id) ON DELETE CASCADE,
+  position INTEGER NOT NULL DEFAULT 0,
+  depends_on_json TEXT NOT NULL DEFAULT '[]',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE (course_id, point_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_course_points_course ON course_points (course_id);
+CREATE INDEX IF NOT EXISTS idx_course_points_unit ON course_points (unit_id);
+CREATE INDEX IF NOT EXISTS idx_course_points_point ON course_points (point_id);
+
+CREATE TABLE IF NOT EXISTS goals (
+  id TEXT PRIMARY KEY,
+  course_id TEXT NOT NULL REFERENCES courses (id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  target_date TEXT,
+  daily_minutes INTEGER,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_goals_course ON goals (course_id);
+
+CREATE TABLE IF NOT EXISTS plans (
+  id TEXT PRIMARY KEY,
+  course_id TEXT NOT NULL REFERENCES courses (id) ON DELETE CASCADE,
+  goal_id TEXT REFERENCES goals (id) ON DELETE SET NULL,
+  start_date TEXT NOT NULL,
+  days INTEGER NOT NULL,
+  daily_minutes INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_plans_course ON plans (course_id);
+CREATE INDEX IF NOT EXISTS idx_plans_status ON plans (status);
+
+CREATE TABLE IF NOT EXISTS plan_items (
+  id TEXT PRIMARY KEY,
+  plan_id TEXT NOT NULL REFERENCES plans (id) ON DELETE CASCADE,
+  course_point_id TEXT NOT NULL REFERENCES course_points (id) ON DELETE CASCADE,
+  date TEXT NOT NULL,
+  position INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'pending',
+  completed_at TEXT,
+  updated_at TEXT NOT NULL,
+  UNIQUE (plan_id, course_point_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_plan_items_plan ON plan_items (plan_id, date, position);
+CREATE INDEX IF NOT EXISTS idx_plan_items_date ON plan_items (date, status);
+`

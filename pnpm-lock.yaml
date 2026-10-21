@@ -26,6 +26,9 @@ importers:
       '@sublate/plugin-ai-provider':
         specifier: workspace:*
         version: link:packages/plugins/ai-provider
+      '@sublate/plugin-course':
+        specifier: workspace:*
+        version: link:packages/plugins/course
       '@sublate/plugin-demo':
         specifier: workspace:*
         version: link:packages/plugins/demo
@@ -44,6 +47,9 @@ importers:
       '@sublate/plugin-parser':
         specifier: workspace:*
         version: link:packages/plugins/parser
+      '@sublate/plugin-planner':
+        specifier: workspace:*
+        version: link:packages/plugins/planner
       '@sublate/plugin-sdk':
         specifier: workspace:*
         version: link:packages/plugin-sdk
@@ -104,6 +110,9 @@ importers:
       '@sublate/plugin-ai-provider':
         specifier: workspace:*
         version: link:../../packages/plugins/ai-provider
+      '@sublate/plugin-course':
+        specifier: workspace:*
+        version: link:../../packages/plugins/course
       '@sublate/plugin-demo':
         specifier: workspace:*
         version: link:../../packages/plugins/demo
@@ -125,6 +134,9 @@ importers:
       '@sublate/plugin-parser':
         specifier: workspace:*
         version: link:../../packages/plugins/parser
+      '@sublate/plugin-planner':
+        specifier: workspace:*
+        version: link:../../packages/plugins/planner
       '@sublate/plugin-sdk':
         specifier: workspace:*
         version: link:../../packages/plugin-sdk
@@ -237,6 +249,18 @@ importers:
         specifier: workspace:*
         version: link:../../plugin-sdk
 
+  packages/plugins/course:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: 4.0.5
+        version: 4.0.5(@deepseek-ai/cordis-plugin-include@1.0.10)(@deepseek-ai/cordis-plugin-loader@1.0.6)
+      '@sublate/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../plugin-sdk
+      zod:
+        specifier: ^4.0.0
+        version: 4.6.7
+
   packages/plugins/demo:
     dependencies:
       '@deepseek-ai/cordis':
@@ -331,6 +355,21 @@ importers:
       '@types/jsdom':
         specifier: 30.0.0
         version: 30.0.0
+
+  packages/plugins/planner:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: 4.0.5
+        version: 4.0.5(@deepseek-ai/cordis-plugin-include@1.0.10)(@deepseek-ai/cordis-plugin-loader@1.0.6)
+      '@sublate/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@sublate/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../plugin-sdk
+      zod:
+        specifier: ^4.0.0
+        version: 4.6.7
 
   packages/plugins/search:
     dependencies:

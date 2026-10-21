@@ -6,6 +6,8 @@ import { AiCallStore } from './ai-calls.ts'
 import { AiJobStore } from './ai-jobs.ts'
 import { CarrierStore } from './carriers.ts'
 import { ChunkStore } from './chunks.ts'
+import { CourseStore } from './course.ts'
+import { GoalStore } from './goals.ts'
 import { KnowledgeStore } from './knowledge.ts'
 import {
   MIGRATION_001,
@@ -13,13 +15,18 @@ import {
   MIGRATION_003,
   MIGRATION_004,
   MIGRATION_005,
+  MIGRATION_006,
 } from './migrations.ts'
+import { PlanStore } from './plans.ts'
 
 export * from './ai-calls.ts'
 export * from './ai-jobs.ts'
 export * from './carriers.ts'
 export * from './chunks.ts'
+export * from './course.ts'
+export * from './goals.ts'
 export * from './knowledge.ts'
+export * from './plans.ts'
 
 export const name = 'storage-sqlite'
 export const inject: string[] = []
@@ -42,6 +49,9 @@ export class SqliteService {
   readonly aiCalls: AiCallStore
   readonly aiJobs: AiJobStore
   readonly knowledge: KnowledgeStore
+  readonly course: CourseStore
+  readonly goals: GoalStore
+  readonly plans: PlanStore
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
@@ -53,6 +63,9 @@ export class SqliteService {
     this.aiCalls = new AiCallStore(this.db)
     this.aiJobs = new AiJobStore(this.db)
     this.knowledge = new KnowledgeStore(this.db)
+    this.course = new CourseStore(this.db)
+    this.goals = new GoalStore(this.db)
+    this.plans = new PlanStore(this.db)
     this.migrate()
   }
 
@@ -67,6 +80,7 @@ export class SqliteService {
     if (version < 3) this.runMigration(MIGRATION_003, 3)
     if (version < 4) this.runMigration(MIGRATION_004, 4)
     if (version < 5) this.runMigration(MIGRATION_005, 5)
+    if (version < 6) this.runMigration(MIGRATION_006, 6)
   }
 
   private runMigration(sql: string, targetVersion: number): void {

@@ -27,5 +27,9 @@
       name: '@sublate/plugin-extractor'
     - id: search
       name: '@sublate/plugin-search'
+    - id: course
+      name: '@sublate/plugin-course'
+    - id: planner
+      name: '@sublate/plugin-planner'
     - id: study-tools
       name: '@sublate/plugin-study-tools'
