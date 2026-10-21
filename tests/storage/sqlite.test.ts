@@ -5,14 +5,24 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { SqliteService } from '@sublate/plugin-storage-sqlite'
 
 const tempDirs: string[] = []
+const services: SqliteService[] = []
 
 function createService() {
   const dir = mkdtempSync(join(tmpdir(), 'sublate-sqlite-'))
   tempDirs.push(dir)
-  return new SqliteService(join(dir, 'sublate.db'))
+  const service = new SqliteService(join(dir, 'sublate.db'))
+  services.push(service)
+  return service
 }
 
 afterEach(() => {
+  for (const service of services.splice(0)) {
+    try {
+      service.close()
+    } catch {
+      // 已手动关闭的连接忽略
+    }
+  }
   for (const dir of tempDirs.splice(0)) {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -27,7 +37,7 @@ describe('storage-sqlite', () => {
     expect(
       (service.db.prepare('PRAGMA user_version').get() as { user_version: number })
         .user_version,
-    ).toBe(1)
+    ).toBe(2)
 
     service.close()
   })

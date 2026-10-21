@@ -1,53 +1,35 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { LibraryPage } from './pages/LibraryPage'
+import { ReaderPage } from './pages/ReaderPage'
+import { TrashPage } from './pages/TrashPage'
 
-interface PluginState {
-  id: string
-  name: string
-  status: 'running' | 'disabled' | 'failed'
-  error?: string
-}
+type View =
+  | { name: 'library' }
+  | { name: 'reader'; id: string; page?: number }
+  | { name: 'trash' }
 
 export function App() {
-  const [plugins, setPlugins] = useState<PluginState[]>([])
-  const [pong, setPong] = useState('加载中…')
-  const [error, setError] = useState<string>()
+  const [view, setView] = useState<View>({ name: 'library' })
 
-  useEffect(() => {
-    window.sublate
-      .getPlugins()
-      .then(setPlugins)
-      .catch((reason) => setError(String(reason)))
+  if (view.name === 'reader') {
+    return (
+      <ReaderPage
+        key={view.id}
+        id={view.id}
+        initialPage={view.page}
+        onBack={() => setView({ name: 'library' })}
+      />
+    )
+  }
 
-    window.sublate
-      .demoPing()
-      .then(setPong)
-      .catch((reason) => setError(String(reason)))
-  }, [])
+  if (view.name === 'trash') {
+    return <TrashPage onBack={() => setView({ name: 'library' })} />
+  }
 
   return (
-    <main className="shell">
-      <header>
-        <h1>SublateMaze</h1>
-        <p className="subtitle">本地优先的个人学习平台与知识库</p>
-      </header>
-
-      <section>
-        <h2>插件树</h2>
-        {error ? <p className="error">{error}</p> : null}
-        <ul className="plugins">
-          {plugins.map((plugin) => (
-            <li key={plugin.id}>
-              <span className={`dot ${plugin.status}`} />
-              <strong>{plugin.id}</strong>
-              <span className="name">{plugin.name}</span>
-              <span className="status">{plugin.status}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="pong">服务自检：{pong}</p>
-      </section>
-
-      <footer>M0 工程骨架 · Windows x64</footer>
-    </main>
+    <LibraryPage
+      onOpen={(id, page) => setView({ name: 'reader', id, page })}
+      onOpenTrash={() => setView({ name: 'trash' })}
+    />
   )
 }

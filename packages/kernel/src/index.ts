@@ -1,7 +1,7 @@
 import { Context } from '@deepseek-ai/cordis'
 import { readFile } from 'node:fs/promises'
 import { parse } from 'yaml'
-import { PluginPatchSchema, type PluginRow } from './schema'
+import { PluginPatchSchema, type PluginRow } from './schema.ts'
 
 export type PluginStatus = 'running' | 'disabled' | 'failed'
 

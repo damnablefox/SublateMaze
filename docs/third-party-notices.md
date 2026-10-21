@@ -14,6 +14,9 @@
 | `yaml` 2.x | ISC | profile 解析 | 否 |
 | `electron` 45.x | MIT | 桌面宿主 | 否 |
 | `react` / `react-dom` 19.x | MIT | 渲染界面 | 否 |
+| `pdfjs-dist` 6.4.299 | Apache-2.0 | PDF 文本提取与阅读器渲染 | 否 |
+| `@mozilla/readability` 0.6.0 | Apache-2.0 | 网页正文提取 | 否 |
+| `jsdom` 30.1.3 | MIT | 网页 DOM 解析（服务端） | 否 |
 
 ## 复制的源码
 

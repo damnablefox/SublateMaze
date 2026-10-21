@@ -6,7 +6,9 @@
   "description": "Windows Electron 壳",
   "main": "./out/main/index.js",
   "scripts": {
+    "predev": "node ../../scripts/copy-pdfjs-assets.mjs",
     "dev": "electron-vite dev",
+    "prebuild": "node ../../scripts/copy-pdfjs-assets.mjs",
     "build": "electron-vite build",
     "start": "electron-vite preview"
   },
@@ -15,9 +17,12 @@
     "@sublate/kernel": "workspace:*",
     "@sublate/plugin-agent": "workspace:*",
     "@sublate/plugin-demo": "workspace:*",
+    "@sublate/plugin-importer": "workspace:*",
     "@sublate/plugin-ipc-bridge": "workspace:*",
     "@sublate/plugin-native-bridge": "workspace:*",
+    "@sublate/plugin-parser": "workspace:*",
     "@sublate/plugin-sdk": "workspace:*",
+    "@sublate/plugin-search": "workspace:*",
     "@sublate/plugin-session": "workspace:*",
     "@sublate/plugin-storage-lancedb": "workspace:*",
     "@sublate/plugin-storage-sqlite": "workspace:*",
@@ -34,6 +39,7 @@
     "@vitejs/plugin-react": "6.1.2",
     "electron": "45.0.0",
     "electron-vite": "6.0.0",
+    "pdfjs-dist": "6.4.299",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "vite": "8.3.5"

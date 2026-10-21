@@ -4,6 +4,10 @@ import type { Context } from '@deepseek-ai/cordis'
 export const name = 'ui-shell'
 export const inject: string[] = []
 
+interface IpcLike {
+  register(channel: string, handler: (...args: any[]) => any): () => void
+}
+
 /**
  * 窗口插件。
  *
@@ -11,7 +15,7 @@ export const inject: string[] = []
  * 卸载插件即可关闭窗口。
  */
 export async function apply(ctx: Context) {
-  const { app, BrowserWindow } = await import('electron')
+  const { app, BrowserWindow, dialog } = await import('electron')
   await app.whenReady()
 
   const appPath = app.getAppPath()
@@ -29,7 +33,9 @@ export async function apply(ctx: Context) {
       preload,
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true,
+      // preload 以 ESM 构建（electron-vite 输出 .mjs），沙箱模式只接受 CJS preload。
+      // 仍保留 contextIsolation 与 nodeIntegration=false，渲染进程无法直接访问 Node。
+      sandbox: false,
     },
   })
 
@@ -44,6 +50,23 @@ export async function apply(ctx: Context) {
   ctx.effect(() => () => {
     if (!window.isDestroyed()) window.destroy()
   })
+
+  const ipc = ctx.get('ipc') as IpcLike | undefined
+  if (ipc) {
+    const dispose = ipc.register('library:pick-files', async () => {
+      const result = await dialog.showOpenDialog(window, {
+        title: '导入知识载体',
+        properties: ['openFile', 'multiSelections'],
+        filters: [{ name: 'PDF 文档', extensions: ['pdf'] }],
+      })
+
+      return result.canceled ? [] : result.filePaths
+    })
+
+    ctx.effect(() => dispose)
+  } else {
+    ctx.logger('ui-shell').warn('IPC 服务不可用，文件选择频道未注册')
+  }
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()

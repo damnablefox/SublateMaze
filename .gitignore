@@ -12,6 +12,7 @@ coverage/
 crates/sublate-native/index.js
 crates/sublate-native/index.d.ts
 apps/desktop/.electron-data/
+apps/desktop/src/renderer/public/pdfjs/
 apps/desktop/resources/python/
 apps/desktop/release/
 

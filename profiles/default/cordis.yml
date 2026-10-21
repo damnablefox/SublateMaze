@@ -24,5 +24,11 @@
       name: '@sublate/plugin-demo'
     - id: ipc-bridge
       name: '@sublate/plugin-ipc-bridge'
+    - id: parser
+      name: '@sublate/plugin-parser'
+    - id: importer
+      name: '@sublate/plugin-importer'
+    - id: search
+      name: '@sublate/plugin-search'
     - id: ui-shell
       name: '@sublate/plugin-ui-shell'

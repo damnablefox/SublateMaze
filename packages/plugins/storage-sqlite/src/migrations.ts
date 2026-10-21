@@ -6,3 +6,64 @@ CREATE TABLE IF NOT EXISTS settings (
   updated_at TEXT NOT NULL
 );
 `
+
+/**
+ * 迁移 002：知识载体、文件、页文本、阅读位置与全文索引。
+ *
+ * carrier_pages_fts 存的是逐字切分后的正文（见 core 的 segmentCjk），
+ * 原文以 carrier_pages.text 为准。
+ */
+export const MIGRATION_002 = `
+CREATE TABLE IF NOT EXISTS carriers (
+  id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL,
+  title TEXT NOT NULL,
+  authors_json TEXT NOT NULL DEFAULT '[]',
+  source_url TEXT,
+  language TEXT,
+  page_count INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'pending',
+  error TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  deleted_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_carriers_deleted ON carriers (deleted_at);
+CREATE INDEX IF NOT EXISTS idx_carriers_source_url ON carriers (source_url);
+
+CREATE TABLE IF NOT EXISTS carrier_files (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  carrier_id TEXT NOT NULL REFERENCES carriers (id) ON DELETE CASCADE,
+  sha256 TEXT NOT NULL,
+  rel_path TEXT NOT NULL,
+  mime TEXT NOT NULL,
+  size INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE (sha256)
+);
+
+CREATE INDEX IF NOT EXISTS idx_carrier_files_carrier ON carrier_files (carrier_id);
+
+CREATE TABLE IF NOT EXISTS carrier_pages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  carrier_id TEXT NOT NULL REFERENCES carriers (id) ON DELETE CASCADE,
+  page_no INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  UNIQUE (carrier_id, page_no)
+);
+
+CREATE TABLE IF NOT EXISTS carrier_read_state (
+  carrier_id TEXT PRIMARY KEY REFERENCES carriers (id) ON DELETE CASCADE,
+  page_no INTEGER NOT NULL DEFAULT 1,
+  scroll_ratio REAL NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL
+);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS carrier_pages_fts USING fts5(
+  body,
+  carrier_id UNINDEXED,
+  page_no UNINDEXED,
+  tokenize = 'unicode61'
+);
+`

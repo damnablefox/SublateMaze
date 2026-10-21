@@ -2,7 +2,10 @@ import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
-import { MIGRATION_001 } from './migrations.ts'
+import { CarrierStore } from './carriers.ts'
+import { MIGRATION_001, MIGRATION_002 } from './migrations.ts'
+
+export * from './carriers.ts'
 
 export const name = 'storage-sqlite'
 export const inject: string[] = []
@@ -20,12 +23,14 @@ export interface StorageConfig {
  */
 export class SqliteService {
   readonly db: DatabaseSync
+  readonly carriers: CarrierStore
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
     this.db = new DatabaseSync(dbPath)
     this.db.exec('PRAGMA journal_mode = WAL')
     this.db.exec('PRAGMA foreign_keys = ON')
+    this.carriers = new CarrierStore(this.db)
     this.migrate()
   }
 
@@ -35,16 +40,19 @@ export class SqliteService {
       | undefined
     const version = row?.user_version ?? 0
 
-    if (version < 1) {
-      this.db.exec('BEGIN')
-      try {
-        this.db.exec(MIGRATION_001)
-        this.db.exec('PRAGMA user_version = 1')
-        this.db.exec('COMMIT')
-      } catch (error) {
-        this.db.exec('ROLLBACK')
-        throw error
-      }
+    if (version < 1) this.runMigration(MIGRATION_001, 1)
+    if (version < 2) this.runMigration(MIGRATION_002, 2)
+  }
+
+  private runMigration(sql: string, targetVersion: number): void {
+    this.db.exec('BEGIN')
+    try {
+      this.db.exec(sql)
+      this.db.exec(`PRAGMA user_version = ${targetVersion}`)
+      this.db.exec('COMMIT')
+    } catch (error) {
+      this.db.exec('ROLLBACK')
+      throw error
     }
   }
 

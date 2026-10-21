@@ -4,7 +4,7 @@
 
 ## 项目定位
 
-SublateMaze 是本地优先的个人学习平台与知识库。当前处于 **M0 工程骨架**，只做基础设施与最小插件树，不实现业务功能。
+SublateMaze 是本地优先的个人学习平台与知识库。当前处于 **M1 知识库、导入与阅读**，已实现 PDF / 网页导入、内容寻址去重、PDF 阅读器、FTS5 检索与回收站。
 
 完整方案见工作区 `../分析文档/SublateMaze-项目工程方案.md`（不在本仓库内）。
 
@@ -42,6 +42,7 @@ cargo test
 4. Agent 工具必须声明权限级别（read / write-draft / write-commit / dangerous），写操作必须经用户确认并写审计事件。
 5. 渲染进程不得直接访问 Node；所有能力经 `preload` 白名单与 IPC 契约。
 6. `packages/shared` 的契约变更必须同步更新调用方与测试。
+7. 插件源码由 Electron 直接以 TypeScript strip-only 模式执行：**禁止参数属性**（`constructor(private x: T)`），相对导入必须带 `.ts` 后缀。
 
 ## 实现流程
 

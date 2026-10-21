@@ -15,3 +15,9 @@
       name: '@sublate/plugin-agent'
     - id: demo
       name: '@sublate/plugin-demo'
+    - id: parser
+      name: '@sublate/plugin-parser'
+    - id: importer
+      name: '@sublate/plugin-importer'
+    - id: search
+      name: '@sublate/plugin-search'
