@@ -4,7 +4,7 @@
 
 把书籍、论文、课程、网页等“知识载体”沉淀为可检索、可定位的知识库，拆解为知识点与知识单元，组织成课程与学习目标，再用记忆模型生成每日计划并持续量化掌握程度。
 
-> 当前状态：**M0 工程骨架**。已完成 pnpm / Cargo 工作区、Cordis 插件内核、Electron 窗口、SQLite / LanceDB 连接与 Agent 三件套骨架（工具、会话、循环）。业务插件从 M1 开始接入。
+> 当前状态：**M0 工程骨架已完成**。pnpm / Cargo 工作区、Cordis 插件内核、Electron 窗口、SQLite / LanceDB、Rust 原生哈希、vault 与 Agent 三件套（工具、会话、循环）均已跑通，10 个插件在应用中全部 running。业务插件从 M1 开始接入。
 
 ## 核心设计
 
@@ -26,8 +26,9 @@
 
 ```powershell
 pnpm install
-pnpm dev:kernel   # 加载 profiles/default/cordis.yml，打印插件树
-pnpm --filter @sublate/desktop dev   # 启动 Electron 窗口
+pnpm build:native                      # 构建 Rust 哈希模块
+pnpm dev:kernel                        # 加载核心 profile，打印插件树
+pnpm --filter @sublate/desktop dev     # 启动 Electron 窗口（含窗口/IPC 插件）
 pnpm typecheck
 pnpm test
 cargo test

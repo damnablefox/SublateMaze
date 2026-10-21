@@ -30,6 +30,9 @@ export async function createKernel(profilePath: string): Promise<Kernel> {
   const ctx = new Context()
   const plugins: PluginState[] = []
 
+  // 供 ipc-bridge 等宿主插件读取的只读视图。
+  ctx.provide('kernelInfo', { plugins })
+
   for (const row of rows) {
     if (row.disabled) {
       plugins.push({ id: row.id, name: row.name, status: 'disabled' })

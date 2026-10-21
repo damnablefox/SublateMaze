@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { createKernel } from '@sublate/kernel'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const { ctx, plugins } = await createKernel(resolve(root, 'profiles/default/cordis.yml'))
+const { ctx, plugins } = await createKernel(resolve(root, 'profiles/kernel/cordis.yml'))
 
 console.table(plugins)
 

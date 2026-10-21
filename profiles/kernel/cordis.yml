@@ -1,0 +1,17 @@
+- insert:
+    - id: native-bridge
+      name: '@sublate/plugin-native-bridge'
+    - id: storage-sqlite
+      name: '@sublate/plugin-storage-sqlite'
+    - id: storage-lancedb
+      name: '@sublate/plugin-storage-lancedb'
+    - id: vault
+      name: '@sublate/plugin-vault'
+    - id: tools
+      name: '@sublate/plugin-tools'
+    - id: session
+      name: '@sublate/plugin-session'
+    - id: agent
+      name: '@sublate/plugin-agent'
+    - id: demo
+      name: '@sublate/plugin-demo'

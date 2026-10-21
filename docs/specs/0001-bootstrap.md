@@ -55,18 +55,20 @@ createKernel(profilePath: string): Promise<{
 
 ## 验收标准
 
-- `pnpm dev:kernel` 输出 6 个插件 `running`，并打印 `pong: SublateMaze`；
+- `pnpm dev:kernel` 输出 8 个核心插件 `running`，并打印 `pong: SublateMaze`；
 - `pnpm typecheck` 无错误；
-- `pnpm test` 12 个用例通过：kernel、SQLite、LanceDB、Agent；
+- `pnpm test` 17 个用例通过：kernel、SQLite、LanceDB、Agent、vault、native；
 - `cargo test` 通过；
-- `pnpm --filter @sublate/desktop build` 通过，Electron 开发模式窗口启动，插件树全部 running；
+- `pnpm build:native` 产出 `.node`；
+- `pnpm --filter @sublate/desktop build` 通过，Electron 开发模式窗口启动，10 个插件全部 running；
 - 远程仓库收到提交。
 
 ## 实际结果（2026-10-21）
 
-- 插件树：storage-sqlite、storage-lancedb、tools、session、agent、demo 全部 running；
-- 测试：12 passed（kernel 2、SQLite 3、LanceDB 4、Agent 3）；
-- Electron 45 + electron-vite 6 构建与启动正常；
+- Electron 内插件树：native-bridge、storage-sqlite、storage-lancedb、vault、tools、session、agent、demo、ipc-bridge、ui-shell 全部 running；
+- 原生哈希后端：rust（0.1.0），缺失时自动降级 TypeScript；
+- 测试：17 passed（kernel 2、SQLite 3、LanceDB 4、Agent 3、vault 4、native 1）；
+- 窗口与 IPC 已插件化：启动器只创建 Cordis Context，`ui-shell` 创建窗口，`ipc-bridge` 注册白名单频道；
 - 受限环境下将 `userData` 指向项目内 `.electron-data`，避免写入 `%APPDATA%` 失败。
 
 ## 后续

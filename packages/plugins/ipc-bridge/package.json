@@ -1,0 +1,19 @@
+{
+  "name": "@sublate/plugin-ipc-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "IPC 白名单：把服务方法暴露给渲染进程",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@sublate/plugin-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "electron": "45.0.0"
+  }
+}

@@ -4,11 +4,11 @@
     - id: storage-sqlite
       name: '@sublate/plugin-storage-sqlite'
       config:
-        path: '.sublate/sublate.db'
+        path: '.vault/.sublate/sublate.db'
     - id: storage-lancedb
       name: '@sublate/plugin-storage-lancedb'
       config:
-        path: '.sublate/lance'
+        path: '.vault/.sublate/lance'
         dim: 1024
     - id: vault
       name: '@sublate/plugin-vault'
@@ -22,3 +22,7 @@
       name: '@sublate/plugin-agent'
     - id: demo
       name: '@sublate/plugin-demo'
+    - id: ipc-bridge
+      name: '@sublate/plugin-ipc-bridge'
+    - id: ui-shell
+      name: '@sublate/plugin-ui-shell'
