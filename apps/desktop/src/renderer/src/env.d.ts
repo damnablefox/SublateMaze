@@ -333,6 +333,15 @@ export interface AgentStep {
   budgetTokens: number
 }
 
+export interface AgentSkillInfo {
+  id: string
+  title: string
+  description: string
+  keywords: string[]
+  tools: string[]
+  example: string
+}
+
 export interface SessionSummary {
   id: string
   goal: string
@@ -554,6 +563,7 @@ declare global {
         cancel(sessionId: string): Promise<void>
         sessions(): Promise<SessionSummary[]>
         session(id: string): Promise<SessionDetail>
+        skills(): Promise<AgentSkillInfo[]>
       }
       notes: {
         list(options?: { includeDeleted?: boolean; query?: string }): Promise<NoteSummary[]>

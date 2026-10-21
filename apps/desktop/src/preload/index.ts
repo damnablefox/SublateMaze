@@ -98,6 +98,7 @@ contextBridge.exposeInMainWorld('sublate', {
     cancel: (sessionId: string) => ipcRenderer.invoke('agent:cancel', { sessionId }),
     sessions: () => ipcRenderer.invoke('agent:sessions', {}),
     session: (id: string) => ipcRenderer.invoke('agent:session', { id }),
+    skills: () => ipcRenderer.invoke('agent:skills', {}),
   },
   notes: {
     list: (options?: { includeDeleted?: boolean; query?: string }) =>

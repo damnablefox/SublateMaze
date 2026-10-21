@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type {
   AgentEvent,
+  AgentSkillInfo,
   AgentStep,
   SessionDetail,
   SessionSummary,
@@ -52,6 +53,16 @@ function EventLine({ event }: { event: AgentEvent }) {
     )
   }
 
+  if (event.type === 'skill') {
+    return (
+      <div className="agent-line">
+        <span className="tag tone-outline">技能</span>
+        <span className="agent-tool-name">{String(payload.title ?? '')}</span>
+        <span className="muted">{String(payload.description ?? '')}</span>
+      </div>
+    )
+  }
+
   if (event.type === 'tool_call') {
     return (
       <div className="tool-card">
@@ -96,6 +107,7 @@ function EventLine({ event }: { event: AgentEvent }) {
 
 export function AgentPage() {
   const [sessions, setSessions] = useState<SessionSummary[]>([])
+  const [skills, setSkills] = useState<AgentSkillInfo[]>([])
   const [detail, setDetail] = useState<SessionDetail>()
   const [liveEvents, setLiveEvents] = useState<AgentEvent[]>([])
   const [step, setStep] = useState<AgentStep>()
@@ -116,6 +128,14 @@ export function AgentPage() {
 
   useEffect(() => {
     void loadSessions()
+
+    void (async () => {
+      try {
+        setSkills(await window.sublate.agent.skills())
+      } catch {
+        // 技能列表加载失败不阻塞助手
+      }
+    })()
   }, [loadSessions])
 
   function appendEvents(events: AgentEvent[]) {
@@ -284,6 +304,24 @@ export function AgentPage() {
             {busy ? '处理中…' : '开始'}
           </button>
         </div>
+
+        {skills.length > 0 ? (
+          <div className="agent-skills" aria-label="技能库">
+            <span className="muted">技能</span>
+            {skills.map(skill => (
+              <button
+                key={skill.id}
+                type="button"
+                className="skill-chip"
+                title={`${skill.description}\n示例：${skill.example}`}
+                onClick={() => setGoal(skill.example)}
+                disabled={busy}
+              >
+                {skill.title}
+              </button>
+            ))}
+          </div>
+        ) : null}
 
         {error ? <p className="error">{error}</p> : null}
 
