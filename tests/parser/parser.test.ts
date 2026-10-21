@@ -21,7 +21,7 @@ function buildArticleHtml(): string {
     '阅读阶段记录当前页码与页内滚动比例，关闭应用后再次打开仍然回到上次的位置。',
   ]
   const body = paragraphs
-    .map((paragraph) => `<p>${paragraph.repeat(8)}</p>`)
+    .map(paragraph => `<p>${paragraph.repeat(8)}</p>`)
     .join('\n')
 
   return `<!doctype html>
@@ -79,7 +79,7 @@ describe('parser', () => {
     expect(parsed.title).toBe('知识库导入与阅读')
     expect(parsed.pageCount).toBeGreaterThan(1)
 
-    const fullText = parsed.pages.map((page) => page.text).join('\n')
+    const fullText = parsed.pages.map(page => page.text).join('\n')
     expect(fullText).toContain('内容哈希')
     expect(fullText).not.toContain('关于我们')
     expect(fullText).not.toContain('版权所有')

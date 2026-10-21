@@ -25,7 +25,7 @@ export class ToolsService implements ToolsApi {
   }
 
   list(): ToolInfo[] {
-    return [...this.registry.values()].map((tool) => ({
+    return [...this.registry.values()].map(tool => ({
       name: tool.name,
       description: tool.description,
       permission: tool.permission,

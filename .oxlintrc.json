@@ -1,0 +1,91 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [],
+  "categories": {
+    "correctness": "off"
+  },
+  "options": {
+    "reportUnusedDisableDirectives": "warn"
+  },
+  "env": {
+    "builtin": true
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/out/**",
+    "**/dist/**",
+    "**/target/**",
+    "**/*.js",
+    "**/*.mjs",
+    "apps/desktop/.electron-data/**",
+    "apps/desktop/.vault/**",
+    "apps/desktop/.sublate/**",
+    "crates/**"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "packages/**/*.{ts,tsx}",
+        "apps/**/*.{ts,tsx}",
+        "scripts/**/*.{ts,tsx}",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "rules": {
+        "no-var": "error",
+        "prefer-const": "error",
+        "prefer-rest-params": "error",
+        "prefer-spread": "error",
+        "no-array-constructor": "error",
+        "no-unused-expressions": "error",
+        "no-unused-vars": [
+          "error",
+          {
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_",
+            "caughtErrorsIgnorePattern": "^_"
+          }
+        ],
+        "no-useless-constructor": "error",
+        "no-duplicate-imports": "error",
+        "eqeqeq": ["error", "always"],
+        "typescript/no-explicit-any": "off",
+        "typescript/no-floating-promises": "off"
+      },
+      "plugins": ["typescript"]
+    },
+    {
+      "files": [
+        "packages/**/*.{ts,tsx}",
+        "apps/**/*.{ts,tsx}",
+        "scripts/**/*.{ts,tsx}",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "rules": {
+        "@stylistic/indent": ["error", 2],
+        "@stylistic/semi": ["error", "never"],
+        "@stylistic/quotes": ["error", "single", { "avoidEscape": true }],
+        "@stylistic/comma-dangle": ["error", "always-multiline"],
+        "@stylistic/eol-last": ["error", "always"],
+        "@stylistic/no-trailing-spaces": "error",
+        "@stylistic/object-curly-spacing": ["error", "always"],
+        "@stylistic/arrow-parens": ["error", "as-needed", { "requireForBlockBody": true }],
+        "@stylistic/max-len": [
+          "error",
+          {
+            "code": 140,
+            "ignoreUrls": true,
+            "ignoreStrings": true,
+            "ignoreTemplateLiterals": true
+          }
+        ]
+      },
+      "jsPlugins": ["@stylistic/eslint-plugin"]
+    },
+    {
+      "files": ["tests/**/*.{ts,tsx}"],
+      "rules": {
+        "@stylistic/max-len": "off"
+      }
+    }
+  ]
+}

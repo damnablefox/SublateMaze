@@ -53,7 +53,7 @@ export class SessionService implements SessionApi {
   }
 
   list(): { id: string; goal: string; createdAt: string; eventCount: number }[] {
-    return [...this.sessions.values()].map((session) => ({
+    return [...this.sessions.values()].map(session => ({
       id: session.id,
       goal: session.goal,
       createdAt: session.createdAt,

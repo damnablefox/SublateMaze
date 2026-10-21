@@ -61,7 +61,7 @@ export class AgentService implements AgentApi {
 
       record('turn', { step, tool: decision.tool })
 
-      const info = this.tools.list().find((tool) => tool.name === decision.tool)
+      const info = this.tools.list().find(tool => tool.name === decision.tool)
       if (!info) {
         record('error', { stage: 'lookup', message: `未知工具：${decision.tool}` })
         return {

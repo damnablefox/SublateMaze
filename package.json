@@ -13,11 +13,14 @@
     "dev:kernel": "tsx scripts/check-kernel.ts",
     "build:native": "napi build --platform --release --cwd crates/sublate-native",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.10.8",
+    "@stylistic/eslint-plugin": "5.10.0",
     "@sublate/core": "workspace:*",
     "@sublate/kernel": "workspace:*",
     "@sublate/plugin-agent": "workspace:*",
@@ -34,6 +37,7 @@
     "@sublate/plugin-vault": "workspace:*",
     "@sublate/shared": "workspace:*",
     "@types/node": "^24.0.0",
+    "oxlint": "1.89.0",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0",

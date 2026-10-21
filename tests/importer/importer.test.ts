@@ -31,7 +31,7 @@ function setup(options: { fetchWeb?: ImporterDeps['parser']['fetchWeb'] } = {}) 
 
   const importer = new ImporterService({
     native: {
-      hashFile: async (path) =>
+      hashFile: async path =>
         createHash('sha256').update(readFileSync(path)).digest('hex'),
     },
     vault,
@@ -39,7 +39,7 @@ function setup(options: { fetchWeb?: ImporterDeps['parser']['fetchWeb'] } = {}) 
     parser: {
       parsePdf: (path, sha256) => parser.parsePdf(path, sha256),
       parseWebHtml: (html, sha256, fallback) => parser.parseWebHtml(html, sha256, fallback),
-      fetchWeb: options.fetchWeb ?? ((url) => parser.fetchWeb(url)),
+      fetchWeb: options.fetchWeb ?? (url => parser.fetchWeb(url)),
     },
     emit: (event, payload) => events.push({ event, payload }),
   })

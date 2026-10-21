@@ -115,8 +115,8 @@ describe('storage-sqlite 载体仓储', () => {
     const zhHits = service.carriers.searchPages(zhMatch!, 10)
     const enHits = service.carriers.searchPages(enMatch!, 10)
 
-    expect(zhHits.map((hit) => hit.pageNo)).toEqual([1])
-    expect(enHits.map((hit) => hit.pageNo)).toEqual([2])
+    expect(zhHits.map(hit => hit.pageNo)).toEqual([1])
+    expect(enHits.map(hit => hit.pageNo)).toEqual([2])
   })
 
   it('软删除后默认列表与搜索都不包含，恢复后重新出现', () => {

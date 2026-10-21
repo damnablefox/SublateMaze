@@ -85,7 +85,7 @@ describe('search', () => {
 
   it('回收站中的载体不参与检索', () => {
     const { sqlite, search } = setup()
-    const carrier = sqlite.carriers.list().find((item) => item.title === '检索说明')
+    const carrier = sqlite.carriers.list().find(item => item.title === '检索说明')
 
     sqlite.carriers.softDelete(carrier!.id)
 

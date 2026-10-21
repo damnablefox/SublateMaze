@@ -32,8 +32,8 @@ describe('Agent 循环', () => {
 
     expect(result.ok).toBe(true)
     expect(result.answer).toBe('完成')
-    expect(result.events.filter((event) => event.type === 'tool_call')).toHaveLength(3)
-    expect(result.events.filter((event) => event.type === 'tool_result')).toHaveLength(3)
+    expect(result.events.filter(event => event.type === 'tool_call')).toHaveLength(3)
+    expect(result.events.filter(event => event.type === 'tool_result')).toHaveLength(3)
 
     const stored = sessions.get(result.sessionId)
     expect(stored?.events).toHaveLength(result.events.length)
@@ -63,8 +63,8 @@ describe('Agent 循环', () => {
 
     expect(result.ok).toBe(false)
     expect(executed).toBe(false)
-    expect(result.events.some((event) => event.type === 'confirm')).toBe(true)
-    expect(result.events.some((event) => event.type === 'error')).toBe(true)
+    expect(result.events.some(event => event.type === 'confirm')).toBe(true)
+    expect(result.events.some(event => event.type === 'error')).toBe(true)
     expect(sessions.get(result.sessionId)?.events.length).toBe(result.events.length)
   })
 
@@ -79,6 +79,6 @@ describe('Agent 循环', () => {
 
     expect(result.ok).toBe(false)
     expect(result.error).toContain('超过最大步数')
-    expect(result.events.filter((event) => event.type === 'tool_call')).toHaveLength(2)
+    expect(result.events.filter(event => event.type === 'tool_call')).toHaveLength(2)
   })
 })

@@ -14,7 +14,7 @@ function resolveProfilePath() {
     resolve(app.getAppPath(), 'profiles/default/cordis.yml'),
     resolve(process.resourcesPath, 'profiles/default/cordis.yml'),
   ]
-  return candidates.find((path) => existsSync(path)) ?? candidates[0]!
+  return candidates.find(path => existsSync(path)) ?? candidates[0]!
 }
 
 async function bootstrap() {
@@ -22,7 +22,7 @@ async function bootstrap() {
 
   console.log(
     '[插件树]',
-    plugins.map((plugin) => `${plugin.id}:${plugin.status}`).join(', '),
+    plugins.map(plugin => `${plugin.id}:${plugin.status}`).join(', '),
   )
   for (const plugin of plugins) {
     if (plugin.status === 'failed') {

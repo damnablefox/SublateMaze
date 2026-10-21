@@ -257,7 +257,7 @@ export class CarrierStore {
       )
       .all(carrierId, from, to) as unknown as { page_no: number; text: string }[]
 
-    return rows.map((row) => ({ pageNo: row.page_no, text: row.text }))
+    return rows.map(row => ({ pageNo: row.page_no, text: row.text }))
   }
 
   getReadState(carrierId: string): ReadState | undefined {
@@ -317,7 +317,7 @@ export class CarrierStore {
       text: string
     }[]
 
-    return rows.map((row) => ({
+    return rows.map(row => ({
       carrierId: row.carrier_id,
       title: row.title,
       pageNo: row.page_no,

@@ -65,7 +65,7 @@ export class SearchService {
     const match = buildFtsMatch(text)
     if (!match) return []
 
-    return this.db.carriers.searchPages(match, Math.min(Math.max(limit, 1), 100)).map((row) => ({
+    return this.db.carriers.searchPages(match, Math.min(Math.max(limit, 1), 100)).map(row => ({
       carrierId: row.carrierId,
       title: row.title,
       pageNo: row.pageNo,

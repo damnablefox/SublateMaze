@@ -39,7 +39,7 @@ function hashFileWithNode(path: string): Promise<string> {
     const stream = createReadStream(path)
 
     stream.on('error', reject)
-    stream.on('data', (chunk) => hash.update(chunk))
+    stream.on('data', chunk => hash.update(chunk))
     stream.on('end', () => resolveHash(hash.digest('hex')))
   })
 }
@@ -54,15 +54,15 @@ export function apply(ctx: Context) {
 
   const service: NativeService = binding
     ? {
-        backend: 'rust',
-        version: binding.nativeVersion(),
-        hashFile: async (path) => binding.fileSha256(path),
-      }
+      backend: 'rust',
+      version: binding.nativeVersion(),
+      hashFile: async path => binding.fileSha256(path),
+    }
     : {
-        backend: 'typescript',
-        version: 'fallback',
-        hashFile: hashFileWithNode,
-      }
+      backend: 'typescript',
+      version: 'fallback',
+      hashFile: hashFileWithNode,
+    }
 
   ctx.provide('native', service)
   console.log(`[native-bridge] 后端：${service.backend}（${service.version}）`)

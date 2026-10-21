@@ -15,7 +15,7 @@ export interface DemoService {
  */
 export function apply(ctx: Context) {
   const service: DemoService = {
-    ping: (message) => `pong: ${message}`,
+    ping: message => `pong: ${message}`,
   }
 
   ctx.provide('demo', service)

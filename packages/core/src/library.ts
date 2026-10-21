@@ -62,9 +62,9 @@ export function splitWebPages(text: string, targetChars = 1200): string[] {
   const paragraphs = text
     .replace(/\r\n/g, '\n')
     .split(/\n+/)
-    .map((paragraph) => paragraph.trim())
-    .filter((paragraph) => paragraph.length > 0)
-    .flatMap((paragraph) => splitLongParagraph(paragraph, targetChars))
+    .map(paragraph => paragraph.trim())
+    .filter(paragraph => paragraph.length > 0)
+    .flatMap(paragraph => splitLongParagraph(paragraph, targetChars))
 
   const pages: string[] = []
   let current = ''
@@ -81,5 +81,5 @@ export function splitWebPages(text: string, targetChars = 1200): string[] {
 
   if (current) pages.push(current)
 
-  return pages.length > 0 ? pages : [text.trim()].filter((value) => value.length > 0)
+  return pages.length > 0 ? pages : [text.trim()].filter(value => value.length > 0)
 }

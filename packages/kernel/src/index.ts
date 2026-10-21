@@ -25,7 +25,7 @@ export interface Kernel {
 export async function createKernel(profilePath: string): Promise<Kernel> {
   const raw = await readFile(profilePath, 'utf8')
   const layers = PluginPatchSchema.parse(parse(raw))
-  const rows: PluginRow[] = layers.flatMap((layer) => layer.insert ?? [])
+  const rows: PluginRow[] = layers.flatMap(layer => layer.insert ?? [])
 
   const ctx = new Context()
   const plugins: PluginState[] = []
