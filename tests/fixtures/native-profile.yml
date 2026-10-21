@@ -1,0 +1,3 @@
+- insert:
+    - id: native-bridge
+      name: '@sublate/plugin-native-bridge'

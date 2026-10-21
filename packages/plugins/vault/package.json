@@ -1,0 +1,17 @@
+{
+  "name": "@sublate/plugin-vault",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "知识库目录：创建 vault、写入 vault.json、路径白名单",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@sublate/plugin-sdk": "workspace:*",
+    "zod": "^4.0.0"
+  }
+}

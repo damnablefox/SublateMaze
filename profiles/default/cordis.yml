@@ -1,4 +1,6 @@
 - insert:
+    - id: native-bridge
+      name: '@sublate/plugin-native-bridge'
     - id: storage-sqlite
       name: '@sublate/plugin-storage-sqlite'
       config:
@@ -8,6 +10,10 @@
       config:
         path: '.sublate/lance'
         dim: 1024
+    - id: vault
+      name: '@sublate/plugin-vault'
+      config:
+        path: '.vault'
     - id: tools
       name: '@sublate/plugin-tools'
     - id: session

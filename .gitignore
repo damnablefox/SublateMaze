@@ -9,12 +9,15 @@ coverage/
 
 # 原生模块与打包资源
 *.node
+crates/sublate-native/index.js
+crates/sublate-native/index.d.ts
 apps/desktop/.electron-data/
 apps/desktop/resources/python/
 apps/desktop/release/
 
 # 本地数据与密钥
 .sublate/
+.vault/
 *.db
 *.db-wal
 *.db-shm

@@ -1,0 +1,17 @@
+[package]
+name = "sublate-native"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "SublateMaze napi-rs 原生模块：文件哈希与后续高性能能力"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { version = "3", default-features = false, features = ["napi8"] }
+napi-derive = "3"
+sha2 = "0.10"
+
+[build-dependencies]
+napi-build = "2"

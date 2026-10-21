@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/sublate-core"]
+members = ["crates/sublate-core", "crates/sublate-native"]
 
 [workspace.package]
 version = "0.1.0"

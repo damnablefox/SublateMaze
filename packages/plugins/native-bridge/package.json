@@ -1,0 +1,16 @@
+{
+  "name": "@sublate/plugin-native-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Rust 原生能力桥：文件哈希，缺失时降级为 TypeScript",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@sublate/plugin-sdk": "workspace:*"
+  }
+}

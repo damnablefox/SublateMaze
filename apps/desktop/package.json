@@ -15,11 +15,13 @@
     "@sublate/kernel": "workspace:*",
     "@sublate/plugin-agent": "workspace:*",
     "@sublate/plugin-demo": "workspace:*",
+    "@sublate/plugin-native-bridge": "workspace:*",
     "@sublate/plugin-sdk": "workspace:*",
     "@sublate/plugin-session": "workspace:*",
     "@sublate/plugin-storage-lancedb": "workspace:*",
     "@sublate/plugin-storage-sqlite": "workspace:*",
     "@sublate/plugin-tools": "workspace:*",
+    "@sublate/plugin-vault": "workspace:*",
     "@sublate/shared": "workspace:*",
     "yaml": "^2.8.0",
     "zod": "^4.0.0"

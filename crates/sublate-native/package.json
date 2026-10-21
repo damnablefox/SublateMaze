@@ -1,0 +1,9 @@
+{
+  "name": "@sublate/native",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SublateMaze napi-rs 原生模块",
+  "napi": {
+    "binaryName": "sublate-native"
+  }
+}
