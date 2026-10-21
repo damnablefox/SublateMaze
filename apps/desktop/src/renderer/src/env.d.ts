@@ -116,6 +116,130 @@ export interface ExtractResult {
   error?: string
 }
 
+export interface Course {
+  id: string
+  title: string
+  description: string
+  status: 'active' | 'archived'
+  dailyMinutes: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CourseSummary extends Course {
+  unitCount: number
+  pointCount: number
+}
+
+export interface CourseUnit {
+  id: string
+  courseId: string
+  title: string
+  position: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CoursePoint {
+  id: string
+  courseId: string
+  unitId?: string
+  pointId: string
+  title: string
+  content: string
+  pageStart: number
+  pageEnd: number
+  position: number
+  dependsOn: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AvailablePoint {
+  id: string
+  carrierId: string
+  carrierTitle: string
+  title: string
+  pageStart: number
+  pageEnd: number
+}
+
+export interface CourseDetail {
+  course: Course
+  units: CourseUnit[]
+  points: CoursePoint[]
+}
+
+export interface Goal {
+  id: string
+  courseId: string
+  title: string
+  targetDate?: string
+  dailyMinutes?: number
+  status: 'active' | 'done' | 'archived'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Plan {
+  id: string
+  courseId: string
+  goalId?: string
+  startDate: string
+  days: number
+  dailyMinutes: number
+  status: 'active' | 'archived'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PlanSummary extends Plan {
+  itemCount: number
+  doneCount: number
+}
+
+export interface PlanItem {
+  id: string
+  planId: string
+  coursePointId: string
+  pointId: string
+  title: string
+  unitTitle?: string
+  date: string
+  position: number
+  status: 'pending' | 'done' | 'skipped'
+  completedAt?: string
+  updatedAt: string
+  pageStart: number
+  pageEnd: number
+  courseId: string
+  courseTitle: string
+}
+
+export interface PlanConflict {
+  pointId: string
+  dependsOnId: string
+  message: string
+}
+
+export interface PlanDetail {
+  plan: Plan
+  items: PlanItem[]
+  conflicts: PlanConflict[]
+}
+
+export interface PlanGenerateResult extends PlanDetail {
+  extended: boolean
+  message?: string
+}
+
+export interface TodaySnapshot {
+  date: string
+  due: PlanItem[]
+  overdue: PlanItem[]
+  stats: { total: number; pending: number; done: number; skipped: number }
+}
+
 declare global {
   interface Window {
     sublate: {
@@ -143,6 +267,46 @@ declare global {
         setAnchor(id: string, pageStart: number, pageEnd: number): Promise<void>
         merge(ids: string[]): Promise<{ id: string }>
         split(id: string, splitPage: number): Promise<{ firstId: string; secondId: string }>
+      }
+      course: {
+        list(): Promise<CourseSummary[]>
+        create(title: string, description?: string, dailyMinutes?: number): Promise<Course>
+        update(id: string, patch: Record<string, unknown>): Promise<void>
+        remove(id: string): Promise<void>
+        detail(id: string): Promise<CourseDetail>
+        createUnit(courseId: string, title: string): Promise<CourseUnit>
+        updateUnit(id: string, title: string): Promise<void>
+        removeUnit(id: string): Promise<void>
+        addPoints(courseId: string, unitId: string | null, pointIds: string[]): Promise<CoursePoint[]>
+        removePoints(ids: string[]): Promise<void>
+        movePoint(id: string, patch: { unitId?: string | null; position?: number }): Promise<void>
+        setDepends(id: string, dependsOn: string[]): Promise<void>
+        availablePoints(id: string): Promise<AvailablePoint[]>
+      }
+      planner: {
+        goals(courseId: string): Promise<Goal[]>
+        createGoal(
+          courseId: string,
+          title: string,
+          targetDate?: string,
+          dailyMinutes?: number,
+        ): Promise<Goal>
+        updateGoal(id: string, patch: Record<string, unknown>): Promise<void>
+        deleteGoal(id: string): Promise<void>
+        plans(courseId: string): Promise<PlanSummary[]>
+        planDetail(id: string): Promise<PlanDetail>
+        generatePlan(input: {
+          courseId: string
+          goalId?: string
+          startDate?: string
+          days?: number
+          dailyMinutes?: number
+        }): Promise<PlanGenerateResult>
+        replan(id: string, dailyMinutes: number): Promise<PlanDetail>
+        deletePlan(id: string): Promise<void>
+        setItemStatus(id: string, status: 'pending' | 'done' | 'skipped'): Promise<PlanDetail>
+        moveItem(id: string, date: string, position?: number): Promise<PlanDetail>
+        today(date?: string): Promise<TodaySnapshot>
       }
     }
   }

@@ -30,4 +30,51 @@ contextBridge.exposeInMainWorld('sublate', {
     split: (id: string, splitPage: number) =>
       ipcRenderer.invoke('knowledge:split', { id, splitPage }),
   },
+  course: {
+    list: () => ipcRenderer.invoke('course:list', {}),
+    create: (title: string, description?: string, dailyMinutes?: number) =>
+      ipcRenderer.invoke('course:create', { title, description, dailyMinutes }),
+    update: (id: string, patch: Record<string, unknown>) =>
+      ipcRenderer.invoke('course:update', { id, ...patch }),
+    remove: (id: string) => ipcRenderer.invoke('course:delete', { id }),
+    detail: (id: string) => ipcRenderer.invoke('course:detail', { id }),
+    createUnit: (courseId: string, title: string) =>
+      ipcRenderer.invoke('course:unit-create', { courseId, title }),
+    updateUnit: (id: string, title: string) =>
+      ipcRenderer.invoke('course:unit-update', { id, title }),
+    removeUnit: (id: string) => ipcRenderer.invoke('course:unit-delete', { id }),
+    addPoints: (courseId: string, unitId: string | null, pointIds: string[]) =>
+      ipcRenderer.invoke('course:points-add', { courseId, unitId, pointIds }),
+    removePoints: (ids: string[]) => ipcRenderer.invoke('course:points-remove', { ids }),
+    movePoint: (id: string, patch: { unitId?: string | null; position?: number }) =>
+      ipcRenderer.invoke('course:point-move', { id, ...patch }),
+    setDepends: (id: string, dependsOn: string[]) =>
+      ipcRenderer.invoke('course:depends', { id, dependsOn }),
+    availablePoints: (id: string) => ipcRenderer.invoke('course:available-points', { id }),
+  },
+  planner: {
+    goals: (courseId: string) => ipcRenderer.invoke('goal:list', { courseId }),
+    createGoal: (courseId: string, title: string, targetDate?: string, dailyMinutes?: number) =>
+      ipcRenderer.invoke('goal:create', { courseId, title, targetDate, dailyMinutes }),
+    updateGoal: (id: string, patch: Record<string, unknown>) =>
+      ipcRenderer.invoke('goal:update', { id, ...patch }),
+    deleteGoal: (id: string) => ipcRenderer.invoke('goal:delete', { id }),
+    plans: (courseId: string) => ipcRenderer.invoke('plan:list', { courseId }),
+    planDetail: (id: string) => ipcRenderer.invoke('plan:detail', { id }),
+    generatePlan: (input: {
+      courseId: string
+      goalId?: string
+      startDate?: string
+      days?: number
+      dailyMinutes?: number
+    }) => ipcRenderer.invoke('plan:generate', input),
+    replan: (id: string, dailyMinutes: number) =>
+      ipcRenderer.invoke('plan:replan', { id, dailyMinutes }),
+    deletePlan: (id: string) => ipcRenderer.invoke('plan:delete', { id }),
+    setItemStatus: (id: string, status: 'pending' | 'done' | 'skipped') =>
+      ipcRenderer.invoke('plan:item-status', { id, status }),
+    moveItem: (id: string, date: string, position?: number) =>
+      ipcRenderer.invoke('plan:item-move', { id, date, position }),
+    today: (date?: string) => ipcRenderer.invoke('plan:today', { date }),
+  },
 })

@@ -48,6 +48,26 @@ export function KnowledgeIcon({ size = 16 }: IconProps) {
   )
 }
 
+export function TodayIcon({ size = 16 }: IconProps) {
+  return (
+    <svg {...base(size)}>
+      <rect x="2.5" y="3.5" width="11" height="10" rx="1.5" />
+      <path d="M2.5 6.5h11M5.5 2v2.5M10.5 2v2.5" />
+      <path d="M6 9l1.5 1.5L10.5 8" />
+    </svg>
+  )
+}
+
+export function CourseIcon({ size = 16 }: IconProps) {
+  return (
+    <svg {...base(size)}>
+      <path d="M2.5 5.5L8 3l5.5 2.5L8 8 2.5 5.5Z" />
+      <path d="M2.5 8.5L8 11l5.5-2.5" />
+      <path d="M2.5 11.5L8 14l5.5-2.5" />
+    </svg>
+  )
+}
+
 export function PlusIcon({ size = 16 }: IconProps) {
   return (
     <svg {...base(size)}>

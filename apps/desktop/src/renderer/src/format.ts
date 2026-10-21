@@ -22,3 +22,15 @@ export function errorText(error: unknown): string {
   if (error instanceof Error) return error.message
   return String(error)
 }
+
+/** 把 YYYY-MM-DD 格式化为「10月22日星期四」。 */
+export function formatDayLabel(date: string): string {
+  const parsed = new Date(`${date}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return date
+
+  return parsed.toLocaleDateString('zh-CN', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  })
+}

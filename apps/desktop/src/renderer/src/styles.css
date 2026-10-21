@@ -827,6 +827,323 @@
   color: var(--label-secondary);
 }
 
+/* ---------- 今日与课程 ---------- */
+
+.text-input {
+  height: 30px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 0.5px solid var(--border-l3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-layer-1);
+  color: var(--label-primary);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.text-input:focus {
+  border-color: var(--state-business);
+}
+
+.text-input::placeholder {
+  color: var(--label-tertiary);
+}
+
+.date-input {
+  flex: none;
+  height: 28px;
+  padding: 0 6px;
+  border: 0.5px solid var(--border-l3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-layer-1);
+  color: var(--label-secondary);
+  font-family: var(--font-code);
+  font-size: 11px;
+  outline: none;
+}
+
+.date-input:focus {
+  border-color: var(--state-business);
+}
+
+.select.sm {
+  height: 28px;
+  font-size: 12px;
+}
+
+.split-layout {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.course-rail {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.course-rail-form {
+  display: flex;
+  gap: 6px;
+}
+
+.course-rail-form .text-input {
+  flex: 1;
+}
+
+.course-chip {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 10px;
+  border: 0.5px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.course-chip:hover {
+  background: var(--interactive-hover);
+}
+
+.course-chip.active {
+  background: var(--interactive-active);
+  border-color: var(--border-l3);
+}
+
+.course-chip-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--label-primary);
+}
+
+.course-chip-meta {
+  font-family: var(--font-code);
+  font-size: 10px;
+  color: var(--label-tertiary);
+}
+
+.course-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.course-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 0.5px solid var(--border-l3);
+}
+
+.course-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--label-primary);
+}
+
+.course-card {
+  padding: 16px;
+  border: 0.5px solid var(--border-l2);
+  border-radius: var(--radius-md);
+  background: var(--bg-layer-1);
+}
+
+.course-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.course-card-head h3 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--label-tertiary);
+}
+
+.inline-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.field-row.inline {
+  gap: 6px;
+}
+
+.field-row .text-input {
+  flex: 0 1 200px;
+}
+
+.goal-form {
+  margin-top: 12px;
+}
+
+.goal-row,
+.course-point-row,
+.plan-item,
+.today-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: var(--radius-md);
+  transition: background var(--dur) var(--ease);
+}
+
+.goal-row:hover,
+.course-point-row:hover,
+.plan-item:hover,
+.today-item:hover {
+  background: var(--interactive-hover);
+}
+
+.goal-row,
+.plan-item {
+  align-items: center;
+}
+
+.is-done {
+  color: var(--label-tertiary);
+  text-decoration: line-through;
+}
+
+.conflict-box {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 0.5px solid color-mix(in srgb, var(--state-warn) 45%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--state-warn) 8%, transparent);
+}
+
+.conflict {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--state-warn);
+}
+
+.conflict + .conflict {
+  margin-top: 2px;
+}
+
+.plan-days {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.plan-day {
+  margin-top: 10px;
+}
+
+.plan-day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+  margin-bottom: 4px;
+}
+
+.plan-day-head h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--label-primary);
+}
+
+.unit-block .empty-hint {
+  padding: 6px 8px;
+}
+
+.available-box {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 0.5px solid var(--border-l3);
+}
+
+.available-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 260px;
+  overflow: auto;
+  margin-top: 10px;
+  padding-right: 4px;
+}
+
+.available-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.available-row:hover {
+  background: var(--interactive-hover);
+}
+
+.available-row .row-title-text {
+  flex: 1;
+  font-size: 13px;
+}
+
+.available-row .checkbox {
+  margin-top: 0;
+}
+
+.danger-text {
+  color: var(--state-error);
+}
+
+.danger-text:hover:not(:disabled) {
+  background: var(--interactive-danger-hover);
+}
+
+.empty-hint {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+@media (max-width: 1080px) {
+  .split-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .course-rail {
+    position: static;
+  }
+
+  .course-rail .list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+}
+
 @media (max-width: 900px) {
   .reader-body {
     grid-template-columns: minmax(0, 1fr);

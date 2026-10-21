@@ -1,7 +1,16 @@
 import type { ThemeMode } from '../theme/theme'
-import { KnowledgeIcon, LibraryIcon, MoonIcon, SunIcon, SystemIcon, TrashIcon } from './icons'
+import {
+  CourseIcon,
+  KnowledgeIcon,
+  LibraryIcon,
+  MoonIcon,
+  SunIcon,
+  SystemIcon,
+  TodayIcon,
+  TrashIcon,
+} from './icons'
 
-export type SidebarView = 'library' | 'knowledge' | 'trash'
+export type SidebarView = 'today' | 'library' | 'knowledge' | 'courses' | 'trash'
 
 interface SidebarProps {
   active: SidebarView | 'reader'
@@ -16,6 +25,14 @@ const THEME_OPTIONS: { mode: ThemeMode; label: string; Icon: typeof SunIcon }[] 
   { mode: 'system', label: '跟随系统', Icon: SystemIcon },
 ]
 
+const NAV_ITEMS: { view: SidebarView; label: string; Icon: typeof SunIcon }[] = [
+  { view: 'today', label: '今日', Icon: TodayIcon },
+  { view: 'library', label: '知识库', Icon: LibraryIcon },
+  { view: 'knowledge', label: '知识点', Icon: KnowledgeIcon },
+  { view: 'courses', label: '课程', Icon: CourseIcon },
+  { view: 'trash', label: '回收站', Icon: TrashIcon },
+]
+
 export function Sidebar({ active, themeMode, onNavigate, onThemeModeChange }: SidebarProps) {
   const current: SidebarView = active === 'reader' ? 'library' : active
 
@@ -27,30 +44,17 @@ export function Sidebar({ active, themeMode, onNavigate, onThemeModeChange }: Si
       </button>
 
       <nav className="sidebar-nav" aria-label="主导航">
-        <button
-          type="button"
-          className={`nav-item${current === 'library' ? ' active' : ''}`}
-          onClick={() => onNavigate('library')}
-        >
-          <LibraryIcon />
-          <span>知识库</span>
-        </button>
-        <button
-          type="button"
-          className={`nav-item${current === 'knowledge' ? ' active' : ''}`}
-          onClick={() => onNavigate('knowledge')}
-        >
-          <KnowledgeIcon />
-          <span>知识点</span>
-        </button>
-        <button
-          type="button"
-          className={`nav-item${current === 'trash' ? ' active' : ''}`}
-          onClick={() => onNavigate('trash')}
-        >
-          <TrashIcon />
-          <span>回收站</span>
-        </button>
+        {NAV_ITEMS.map(({ view, label, Icon }) => (
+          <button
+            key={view}
+            type="button"
+            className={`nav-item${current === view ? ' active' : ''}`}
+            onClick={() => onNavigate(view)}
+          >
+            <Icon />
+            <span>{label}</span>
+          </button>
+        ))}
       </nav>
 
       <div className="sidebar-foot">
@@ -68,7 +72,7 @@ export function Sidebar({ active, themeMode, onNavigate, onThemeModeChange }: Si
             </button>
           ))}
         </div>
-        <span className="sidebar-version">M1 · Windows x64</span>
+        <span className="sidebar-version">M3 · Windows x64</span>
       </div>
     </aside>
   )

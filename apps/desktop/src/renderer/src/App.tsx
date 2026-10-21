@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Sidebar, type SidebarView } from './components/Sidebar'
+import { CoursesPage } from './pages/CoursesPage'
 import { KnowledgePage } from './pages/KnowledgePage'
 import { LibraryPage } from './pages/LibraryPage'
 import { ReaderPage } from './pages/ReaderPage'
+import { TodayPage } from './pages/TodayPage'
 import { TrashPage } from './pages/TrashPage'
 import {
   applyTheme,
@@ -13,13 +15,15 @@ import {
 } from './theme/theme'
 
 type View =
+  | { name: 'today' }
   | { name: 'library' }
   | { name: 'knowledge' }
+  | { name: 'courses' }
   | { name: 'reader'; id: string; page?: number }
   | { name: 'trash' }
 
 export function App() {
-  const [view, setView] = useState<View>({ name: 'library' })
+  const [view, setView] = useState<View>({ name: 'today' })
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => loadThemeMode())
 
   useEffect(() => {
@@ -57,6 +61,10 @@ export function App() {
           <TrashPage onBack={() => setView({ name: 'library' })} />
         ) : view.name === 'knowledge' ? (
           <KnowledgePage />
+        ) : view.name === 'courses' ? (
+          <CoursesPage />
+        ) : view.name === 'today' ? (
+          <TodayPage />
         ) : (
           <LibraryPage
             onOpen={(id, page) => setView({ name: 'reader', id, page })}
