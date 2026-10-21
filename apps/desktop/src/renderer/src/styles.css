@@ -1128,6 +1128,158 @@
   font-size: 12px;
 }
 
+/* ---------- 复习 ---------- */
+
+.review-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+  border: 0.5px solid var(--border-l2);
+  border-radius: var(--radius-md);
+  background: var(--bg-layer-1);
+}
+
+.review-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 760px;
+}
+
+.review-progress {
+  padding: 0 4px;
+  font-family: var(--font-code);
+  font-size: 11px;
+  color: var(--label-tertiary);
+}
+
+.review-card {
+  padding: 22px 24px;
+  border: 0.5px solid var(--border-l2);
+  border-radius: var(--radius-lg);
+  background: var(--bg-layer-1);
+  box-shadow: var(--elevation-panel);
+}
+
+.review-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 0.5px solid var(--border-l3);
+}
+
+.review-heading {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.review-heading h2 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--label-primary);
+}
+
+.review-body {
+  padding-top: 16px;
+}
+
+.review-answer {
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--label-secondary);
+  white-space: pre-wrap;
+}
+
+.review-timer {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--font-code);
+  font-size: 11px;
+  color: var(--label-tertiary);
+}
+
+.review-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 36px 0;
+  text-align: center;
+}
+
+.review-hint p {
+  font-size: 13px;
+  color: var(--label-tertiary);
+}
+
+.review-ratings {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.rating-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 8px;
+  border: 0.5px solid var(--border-l3);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--label-primary);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.rating-button:hover:not(:disabled) {
+  background: var(--interactive-hover);
+  border-color: var(--border-l4);
+}
+
+.rating-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rating-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rating-hint {
+  font-size: 11px;
+  color: var(--label-tertiary);
+}
+
+.review-done {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 520px;
+}
+
+.review-done h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--label-primary);
+}
+
+@media (max-width: 720px) {
+  .review-ratings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1080px) {
   .split-layout {
     grid-template-columns: minmax(0, 1fr);

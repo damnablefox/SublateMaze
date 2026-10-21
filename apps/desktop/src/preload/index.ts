@@ -77,4 +77,11 @@ contextBridge.exposeInMainWorld('sublate', {
       ipcRenderer.invoke('plan:item-move', { id, date, position }),
     today: (date?: string) => ipcRenderer.invoke('plan:today', { date }),
   },
+  review: {
+    queue: (limit?: number) => ipcRenderer.invoke('review:queue', { limit }),
+    submit: (pointId: string, rating: 1 | 2 | 3 | 4) =>
+      ipcRenderer.invoke('review:submit', { pointId, rating }),
+    stats: () => ipcRenderer.invoke('review:stats', {}),
+    history: (pointId: string) => ipcRenderer.invoke('review:history', { pointId }),
+  },
 })

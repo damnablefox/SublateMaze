@@ -4,6 +4,7 @@ import { CoursesPage } from './pages/CoursesPage'
 import { KnowledgePage } from './pages/KnowledgePage'
 import { LibraryPage } from './pages/LibraryPage'
 import { ReaderPage } from './pages/ReaderPage'
+import { ReviewPage } from './pages/ReviewPage'
 import { TodayPage } from './pages/TodayPage'
 import { TrashPage } from './pages/TrashPage'
 import {
@@ -16,6 +17,7 @@ import {
 
 type View =
   | { name: 'today' }
+  | { name: 'reviews' }
   | { name: 'library' }
   | { name: 'knowledge' }
   | { name: 'courses' }
@@ -63,8 +65,12 @@ export function App() {
           <KnowledgePage />
         ) : view.name === 'courses' ? (
           <CoursesPage />
+        ) : view.name === 'reviews' ? (
+          <ReviewPage
+            onOpenCarrier={(id, page) => setView({ name: 'reader', id, page })}
+          />
         ) : view.name === 'today' ? (
-          <TodayPage />
+          <TodayPage onOpenReviews={() => setView({ name: 'reviews' })} />
         ) : (
           <LibraryPage
             onOpen={(id, page) => setView({ name: 'reader', id, page })}

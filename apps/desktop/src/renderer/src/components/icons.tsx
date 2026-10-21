@@ -68,6 +68,16 @@ export function CourseIcon({ size = 16 }: IconProps) {
   )
 }
 
+export function ReviewIcon({ size = 16 }: IconProps) {
+  return (
+    <svg {...base(size)}>
+      <rect x="2.5" y="4.75" width="8.5" height="8.5" rx="1.5" />
+      <path d="M5.25 2.75h5.75A1.5 1.5 0 0 1 12.5 4.25v5.75" />
+      <path d="M4.75 8.75l1.5 1.5 2.5-2.75" />
+    </svg>
+  )
+}
+
 export function PlusIcon({ size = 16 }: IconProps) {
   return (
     <svg {...base(size)}>

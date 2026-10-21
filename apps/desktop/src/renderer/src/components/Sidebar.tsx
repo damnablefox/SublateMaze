@@ -4,13 +4,14 @@ import {
   KnowledgeIcon,
   LibraryIcon,
   MoonIcon,
+  ReviewIcon,
   SunIcon,
   SystemIcon,
   TodayIcon,
   TrashIcon,
 } from './icons'
 
-export type SidebarView = 'today' | 'library' | 'knowledge' | 'courses' | 'trash'
+export type SidebarView = 'today' | 'reviews' | 'library' | 'knowledge' | 'courses' | 'trash'
 
 interface SidebarProps {
   active: SidebarView | 'reader'
@@ -27,6 +28,7 @@ const THEME_OPTIONS: { mode: ThemeMode; label: string; Icon: typeof SunIcon }[] 
 
 const NAV_ITEMS: { view: SidebarView; label: string; Icon: typeof SunIcon }[] = [
   { view: 'today', label: '今日', Icon: TodayIcon },
+  { view: 'reviews', label: '复习', Icon: ReviewIcon },
   { view: 'library', label: '知识库', Icon: LibraryIcon },
   { view: 'knowledge', label: '知识点', Icon: KnowledgeIcon },
   { view: 'courses', label: '课程', Icon: CourseIcon },
@@ -72,7 +74,7 @@ export function Sidebar({ active, themeMode, onNavigate, onThemeModeChange }: Si
             </button>
           ))}
         </div>
-        <span className="sidebar-version">M3 · Windows x64</span>
+        <span className="sidebar-version">M4 · Windows x64</span>
       </div>
     </aside>
   )

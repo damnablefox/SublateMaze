@@ -240,6 +240,42 @@ export interface TodaySnapshot {
   stats: { total: number; pending: number; done: number; skipped: number }
 }
 
+export interface ReviewCard {
+  pointId: string
+  title: string
+  content: string
+  carrierId: string
+  carrierTitle: string
+  pageStart: number
+  pageEnd: number
+  dueAt?: string
+  reps: number
+  masteryScore: number
+  retrievability: number
+}
+
+export interface ReviewStats {
+  dueCount: number
+  newCount: number
+  reviewedToday: number
+  averageMastery: number
+  totalPoints: number
+}
+
+export interface ReviewQueue {
+  due: ReviewCard[]
+  newCards: ReviewCard[]
+  stats: ReviewStats
+}
+
+export interface ReviewResult {
+  pointId: string
+  dueAt: string
+  intervalDays: number
+  mastery: number
+  accuracy: number
+}
+
 declare global {
   interface Window {
     sublate: {
@@ -307,6 +343,12 @@ declare global {
         setItemStatus(id: string, status: 'pending' | 'done' | 'skipped'): Promise<PlanDetail>
         moveItem(id: string, date: string, position?: number): Promise<PlanDetail>
         today(date?: string): Promise<TodaySnapshot>
+      }
+      review: {
+        queue(limit?: number): Promise<ReviewQueue>
+        submit(pointId: string, rating: 1 | 2 | 3 | 4): Promise<ReviewResult>
+        stats(): Promise<ReviewStats>
+        history(pointId: string): Promise<unknown[]>
       }
     }
   }

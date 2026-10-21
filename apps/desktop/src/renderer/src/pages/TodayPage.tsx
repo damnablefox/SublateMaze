@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { PlanItem, TodaySnapshot } from '../env'
+import type { PlanItem, ReviewStats, TodaySnapshot } from '../env'
 import { errorText, formatDayLabel } from '../format'
 
 function pageRange(item: PlanItem): string {
@@ -59,14 +59,20 @@ function TaskList({ items, busy, onStatus }: TaskListProps) {
   )
 }
 
-export function TodayPage() {
+export function TodayPage({ onOpenReviews }: { onOpenReviews(): void }) {
   const [snapshot, setSnapshot] = useState<TodaySnapshot>()
+  const [reviewStats, setReviewStats] = useState<ReviewStats>()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string>()
 
   const refresh = useCallback(async () => {
     try {
-      setSnapshot(await window.sublate.planner.today())
+      const [today, reviews] = await Promise.all([
+        window.sublate.planner.today(),
+        window.sublate.review.stats(),
+      ])
+      setSnapshot(today)
+      setReviewStats(reviews)
       setError(undefined)
     } catch (reason) {
       setError(`读取今日计划失败：${errorText(reason)}`)
@@ -122,6 +128,34 @@ export function TodayPage() {
         ) : null}
 
         {error ? <p className="error">{error}</p> : null}
+
+        <section className="section">
+          <div className="section-head">
+            <h2>今日复习</h2>
+            <span className="section-count">
+              {reviewStats ? `${reviewStats.dueCount + reviewStats.newCount} 张待复习` : ''}
+            </span>
+          </div>
+
+          {reviewStats && reviewStats.totalPoints > 0 ? (
+            <div className="review-banner">
+              <div className="row-body">
+                <span className="row-title-text">
+                  到期 {reviewStats.dueCount} 张 · 新卡 {reviewStats.newCount} 张
+                </span>
+                <span className="row-meta">
+                  今日已复习 {reviewStats.reviewedToday} 张 · 平均掌握{' '}
+                  {Math.round(reviewStats.averageMastery * 100)}%
+                </span>
+              </div>
+              <button className="button sm primary" type="button" onClick={onOpenReviews}>
+                开始复习
+              </button>
+            </div>
+          ) : (
+            <p className="muted empty-hint">确认知识点后，这里会出现复习入口。</p>
+          )}
+        </section>
 
         <section className="section">
           <div className="section-head">
