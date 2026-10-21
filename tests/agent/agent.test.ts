@@ -74,7 +74,7 @@ describe('Agent 循环', () => {
     const result = await agent.run({
       goal: '无进展任务',
       maxSteps: 2,
-      decide: () => ({ type: 'tool', tool: 'demo.echo', args: { text: '循环' } }),
+      decide: ({ step }) => ({ type: 'tool', tool: 'demo.echo', args: { text: `循环 ${step}` } }),
     })
 
     expect(result.ok).toBe(false)

@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import { AiCallStore } from './ai-calls.ts'
 import { AiJobStore } from './ai-jobs.ts'
+import { AgentSessionStore } from './agent-sessions.ts'
 import { CarrierStore } from './carriers.ts'
 import { ChunkStore } from './chunks.ts'
 import { CourseStore } from './course.ts'
@@ -17,12 +18,14 @@ import {
   MIGRATION_005,
   MIGRATION_006,
   MIGRATION_007,
+  MIGRATION_008,
 } from './migrations.ts'
 import { PlanStore } from './plans.ts'
 import { SchedulerStore } from './scheduler.ts'
 
 export * from './ai-calls.ts'
 export * from './ai-jobs.ts'
+export * from './agent-sessions.ts'
 export * from './carriers.ts'
 export * from './chunks.ts'
 export * from './course.ts'
@@ -56,6 +59,7 @@ export class SqliteService {
   readonly goals: GoalStore
   readonly plans: PlanStore
   readonly scheduler: SchedulerStore
+  readonly agentSessions: AgentSessionStore
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
@@ -71,6 +75,7 @@ export class SqliteService {
     this.goals = new GoalStore(this.db)
     this.plans = new PlanStore(this.db)
     this.scheduler = new SchedulerStore(this.db)
+    this.agentSessions = new AgentSessionStore(this.db)
     this.migrate()
   }
 
@@ -87,6 +92,7 @@ export class SqliteService {
     if (version < 5) this.runMigration(MIGRATION_005, 5)
     if (version < 6) this.runMigration(MIGRATION_006, 6)
     if (version < 7) this.runMigration(MIGRATION_007, 7)
+    if (version < 8) this.runMigration(MIGRATION_008, 8)
   }
 
   private runMigration(sql: string, targetVersion: number): void {

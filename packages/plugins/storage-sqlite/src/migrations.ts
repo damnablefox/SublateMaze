@@ -270,3 +270,29 @@ CREATE TABLE IF NOT EXISTS reviews (
 CREATE INDEX IF NOT EXISTS idx_reviews_point ON reviews (point_id, reviewed_at);
 CREATE INDEX IF NOT EXISTS idx_reviews_time ON reviews (reviewed_at);
 `
+
+/** 迁移 008：Agent 会话与事件日志。 */
+export const MIGRATION_008 = `
+CREATE TABLE IF NOT EXISTS agent_sessions (
+  id TEXT PRIMARY KEY,
+  goal TEXT NOT NULL,
+  title TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'running',
+  budget_tokens INTEGER NOT NULL DEFAULT 0,
+  used_tokens INTEGER NOT NULL DEFAULT 0,
+  answer TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_sessions_updated ON agent_sessions (updated_at);
+
+CREATE TABLE IF NOT EXISTS agent_events (
+  session_id TEXT NOT NULL REFERENCES agent_sessions (id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  type TEXT NOT NULL,
+  payload_json TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (session_id, seq)
+);
+`

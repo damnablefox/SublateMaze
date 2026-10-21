@@ -377,6 +377,15 @@ export class SchedulerStore {
     return rows.map(mapCard)
   }
 
+  /** 按 id 读取单张卡片，供 Agent 工具使用。 */
+  getCard(pointId: string): ReviewCard | undefined {
+    const rows = this.db
+      .prepare(`${CARD_SELECT} AND kp.id = ?`)
+      .all(pointId) as unknown as CardRow[]
+
+    return rows[0] ? mapCard(rows[0]) : undefined
+  }
+
   history(pointId: string, limit = 20): ReviewRecord[] {
     const rows = this.db
       .prepare(

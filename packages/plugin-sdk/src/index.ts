@@ -64,11 +64,43 @@ export interface AgentEvent {
   createdAt: string
 }
 
+export interface SessionSummary {
+  id: string
+  goal: string
+  title: string
+  status: string
+  budgetTokens: number
+  usedTokens: number
+  createdAt: string
+  updatedAt: string
+  eventCount: number
+}
+
+export interface SessionDetail {
+  id: string
+  goal: string
+  title: string
+  status: string
+  budgetTokens: number
+  usedTokens: number
+  answer?: string
+  createdAt: string
+  updatedAt: string
+  events: AgentEvent[]
+}
+
 export interface SessionApi {
-  start(goal: string): { id: string; goal: string; createdAt: string }
+  start(
+    goal: string,
+    options?: { budgetTokens?: number },
+  ): { id: string; goal: string; createdAt: string }
   append(sessionId: string, type: string, payload: unknown): AgentEvent
-  get(sessionId: string): { id: string; goal: string; events: AgentEvent[] } | undefined
-  list(): { id: string; goal: string; createdAt: string; eventCount: number }[]
+  get(sessionId: string): SessionDetail | undefined
+  list(limit?: number): SessionSummary[]
+  finish(
+    sessionId: string,
+    patch: { status?: string; usedTokens?: number; answer?: string },
+  ): void
 }
 
 export type AgentDecision =

@@ -77,6 +77,7 @@ interface SchedulerDbLike {
   countNew(): number
   countConfirmed(): number
   getPoint(pointId: string): PointLike | undefined
+  getCard(pointId: string): CardLike | undefined
   listAll(): MasteryLike[]
   listConfirmedByCarrier(): ScopeRowLike[]
   listConfirmedByCourse(): ScopeRowLike[]
@@ -316,6 +317,24 @@ export class SchedulerService {
 
   history(pointId: string, limit = 20): unknown[] {
     return this.db.history(pointId, limit)
+  }
+
+  /** 读取单个知识点的卡片视图，供 Agent 工具使用。 */
+  card(pointId: string): ReviewCardView | undefined {
+    const card = this.db.getCard(pointId)
+    return card ? toView(card, new Date()) : undefined
+  }
+
+  /** 读取单个知识点的掌握摘要；未复习时返回 undefined。 */
+  mastery(pointId: string): { reps: number; dueAt?: string; mastery: number } | undefined {
+    const state = this.db.get(pointId)
+    if (!state) return undefined
+
+    return {
+      reps: state.reps,
+      dueAt: state.dueAt,
+      mastery: masteryScore(toReviewState(state), new Date()),
+    }
   }
 
   /** 进度面板所需的聚合视图：预算、载体消化、课程进度与掌握度分布。 */

@@ -11,12 +11,12 @@
       name: '@sublate/plugin-tools'
     - id: session
       name: '@sublate/plugin-session'
-    - id: agent
-      name: '@sublate/plugin-agent'
     - id: demo
       name: '@sublate/plugin-demo'
     - id: ai-provider
       name: '@sublate/plugin-ai-provider'
+    - id: agent
+      name: '@sublate/plugin-agent'
     - id: parser
       name: '@sublate/plugin-parser'
     - id: importer
