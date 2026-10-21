@@ -8,6 +8,7 @@ import {
   NotesIcon,
   OverviewIcon,
   ReviewIcon,
+  SetsIcon,
   SunIcon,
   SystemIcon,
   TodayIcon,
@@ -20,6 +21,7 @@ export type SidebarView =
   | 'library'
   | 'knowledge'
   | 'notes'
+  | 'sets'
   | 'courses'
   | 'overview'
   | 'agent'
@@ -44,6 +46,7 @@ const NAV_ITEMS: { view: SidebarView; label: string; Icon: typeof SunIcon }[] = 
   { view: 'library', label: '知识库', Icon: LibraryIcon },
   { view: 'knowledge', label: '知识点', Icon: KnowledgeIcon },
   { view: 'notes', label: '笔记', Icon: NotesIcon },
+  { view: 'sets', label: '专业集', Icon: SetsIcon },
   { view: 'courses', label: '课程', Icon: CourseIcon },
   { view: 'overview', label: '进度', Icon: OverviewIcon },
   { view: 'agent', label: '助手', Icon: AgentIcon },

@@ -411,6 +411,68 @@ export interface NoteRefOptions {
   points: { id: string; title: string; carrierId: string; carrierTitle: string }[]
 }
 
+export interface ResearchDegree {
+  breadth: number
+  depth: number
+  mastery: number
+  score: number
+  level: '入门' | '进阶' | '熟练' | '精通'
+  totalPoints: number
+  confirmedPoints: number
+  reviewedPoints: number
+}
+
+export type SetNodeKind = 'point' | 'carrier'
+export type SetEdgeKind = 'prereq' | 'related'
+
+export interface SetRecord {
+  id: string
+  title: string
+  description: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SetNode {
+  id: string
+  setId: string
+  kind: SetNodeKind
+  refId: string
+  position: number
+  createdAt: string
+  title: string
+  subtitle?: string
+  status?: string
+  missing: boolean
+}
+
+export interface SetEdge {
+  id: string
+  setId: string
+  sourceId: string
+  targetId: string
+  kind: SetEdgeKind
+  createdAt: string
+}
+
+export interface SetSummary extends SetRecord {
+  nodeCount: number
+  pointCount: number
+  degree: ResearchDegree
+}
+
+export interface SetDetail {
+  set: SetRecord
+  nodes: SetNode[]
+  edges: SetEdge[]
+  degree: ResearchDegree
+}
+
+export interface SetOptions {
+  carriers: { id: string; title: string }[]
+  points: { id: string; title: string; carrierId: string; carrierTitle: string }[]
+}
+
 declare global {
   interface Window {
     sublate: {
@@ -507,6 +569,27 @@ declare global {
         purge(id: string): Promise<void>
         forRef(refType: NoteRefType, refId: string): Promise<NoteRecord[]>
         refOptions(): Promise<NoteRefOptions>
+      }
+      sets: {
+        list(): Promise<SetSummary[]>
+        detail(id: string): Promise<SetDetail>
+        create(title: string, description?: string): Promise<SetDetail>
+        update(
+          id: string,
+          patch: { title?: string; description?: string },
+        ): Promise<SetDetail>
+        remove(id: string): Promise<void>
+        addNodes(
+          id: string,
+          nodes: { kind: SetNodeKind; refId: string }[],
+        ): Promise<SetDetail>
+        removeNode(id: string, nodeId: string): Promise<SetDetail>
+        addEdge(
+          id: string,
+          input: { sourceId: string; targetId: string; kind: SetEdgeKind },
+        ): Promise<SetDetail>
+        removeEdge(id: string, edgeId: string): Promise<SetDetail>
+        options(): Promise<SetOptions>
       }
     }
   }

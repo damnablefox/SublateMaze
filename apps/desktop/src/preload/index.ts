@@ -115,4 +115,24 @@ contextBridge.exposeInMainWorld('sublate', {
       ipcRenderer.invoke('note:for-ref', { refType, refId }),
     refOptions: () => ipcRenderer.invoke('note:ref-options', {}),
   },
+  sets: {
+    list: () => ipcRenderer.invoke('set:list', {}),
+    detail: (id: string) => ipcRenderer.invoke('set:detail', { id }),
+    create: (title: string, description?: string) =>
+      ipcRenderer.invoke('set:create', { title, description }),
+    update: (id: string, patch: { title?: string; description?: string }) =>
+      ipcRenderer.invoke('set:update', { id, ...patch }),
+    remove: (id: string) => ipcRenderer.invoke('set:delete', { id }),
+    addNodes: (id: string, nodes: { kind: 'point' | 'carrier'; refId: string }[]) =>
+      ipcRenderer.invoke('set:add-nodes', { id, nodes }),
+    removeNode: (id: string, nodeId: string) =>
+      ipcRenderer.invoke('set:remove-node', { id, nodeId }),
+    addEdge: (
+      id: string,
+      input: { sourceId: string; targetId: string; kind: 'prereq' | 'related' },
+    ) => ipcRenderer.invoke('set:add-edge', { id, ...input }),
+    removeEdge: (id: string, edgeId: string) =>
+      ipcRenderer.invoke('set:remove-edge', { id, edgeId }),
+    options: () => ipcRenderer.invoke('set:options', {}),
+  },
 })

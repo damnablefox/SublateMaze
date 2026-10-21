@@ -8,6 +8,7 @@ import { NotesPage } from './pages/NotesPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { ReaderPage } from './pages/ReaderPage'
 import { ReviewPage } from './pages/ReviewPage'
+import { SetsPage } from './pages/SetsPage'
 import { TodayPage } from './pages/TodayPage'
 import { TrashPage } from './pages/TrashPage'
 import {
@@ -24,6 +25,7 @@ type View =
   | { name: 'library' }
   | { name: 'knowledge' }
   | { name: 'notes'; noteId?: string; ref?: { refType: 'point' | 'carrier'; refId: string; label: string } }
+  | { name: 'sets' }
   | { name: 'courses' }
   | { name: 'overview' }
   | { name: 'agent' }
@@ -82,6 +84,8 @@ export function App() {
             initialNoteId={view.noteId}
             initialRef={view.ref}
           />
+        ) : view.name === 'sets' ? (
+          <SetsPage />
         ) : view.name === 'courses' ? (
           <CoursesPage />
         ) : view.name === 'overview' ? (

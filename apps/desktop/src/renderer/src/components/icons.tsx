@@ -58,6 +58,17 @@ export function NotesIcon({ size = 16 }: IconProps) {
   )
 }
 
+export function SetsIcon({ size = 16 }: IconProps) {
+  return (
+    <svg {...base(size)}>
+      <circle cx="5" cy="5" r="2" />
+      <circle cx="11.5" cy="4.5" r="1.6" />
+      <circle cx="8" cy="11.5" r="2" />
+      <path d="M6.6 6.4l1 3.2M10.7 6l-1.9 3.6M7 4.9l2.9-.3" />
+    </svg>
+  )
+}
+
 export function TodayIcon({ size = 16 }: IconProps) {
   return (
     <svg {...base(size)}>
