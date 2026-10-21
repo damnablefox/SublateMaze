@@ -24,6 +24,7 @@
     "@sublate/plugin-indexer": "workspace:*",
     "@sublate/plugin-ipc-bridge": "workspace:*",
     "@sublate/plugin-native-bridge": "workspace:*",
+    "@sublate/plugin-notes": "workspace:*",
     "@sublate/plugin-parser": "workspace:*",
     "@sublate/plugin-planner": "workspace:*",
     "@sublate/plugin-scheduler": "workspace:*",

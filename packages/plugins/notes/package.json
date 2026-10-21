@@ -1,0 +1,18 @@
+{
+  "name": "@sublate/plugin-notes",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "笔记插件：Markdown 文件、wiki 双向链接、关联知识点与载体、回收站",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@sublate/core": "workspace:*",
+    "@sublate/plugin-sdk": "workspace:*",
+    "zod": "^4.0.0"
+  }
+}

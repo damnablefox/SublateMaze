@@ -47,7 +47,7 @@ afterEach(() => {
 })
 
 describe('storage-sqlite 载体仓储', () => {
-  it('迁移到版本 8 且保留既有 settings', () => {
+  it('迁移到版本 9 且保留既有 settings', () => {
     const dir = mkdtempSync(join(tmpdir(), 'sublate-carriers-'))
     tempDirs.push(dir)
     const path = join(dir, 'sublate.db')
@@ -59,7 +59,7 @@ describe('storage-sqlite 载体仓储', () => {
     expect(second.getSetting('theme')).toBe('dark')
     expect(
       (second.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version,
-    ).toBe(8)
+    ).toBe(9)
   })
 
   it('创建载体后可按 id 与内容哈希读取', () => {

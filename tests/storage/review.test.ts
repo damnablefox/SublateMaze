@@ -72,10 +72,10 @@ afterEach(() => {
 })
 
 describe('storage-sqlite 复习仓储', () => {
-  it('迁移到版本 8，新卡队列包含已确认知识点', () => {
+  it('迁移到版本 9，新卡队列包含已确认知识点', () => {
     const { sqlite, points } = setup()
 
-    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(8)
+    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(9)
     expect(sqlite.scheduler.newQueue()).toHaveLength(3)
     expect(sqlite.scheduler.dueQueue(new Date().toISOString())).toEqual([])
     expect(sqlite.scheduler.countConfirmed()).toBe(3)

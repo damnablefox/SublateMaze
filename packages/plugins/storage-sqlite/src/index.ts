@@ -19,7 +19,9 @@ import {
   MIGRATION_006,
   MIGRATION_007,
   MIGRATION_008,
+  MIGRATION_009,
 } from './migrations.ts'
+import { NoteStore } from './notes.ts'
 import { PlanStore } from './plans.ts'
 import { SchedulerStore } from './scheduler.ts'
 
@@ -31,6 +33,7 @@ export * from './chunks.ts'
 export * from './course.ts'
 export * from './goals.ts'
 export * from './knowledge.ts'
+export * from './notes.ts'
 export * from './plans.ts'
 export * from './scheduler.ts'
 
@@ -60,6 +63,7 @@ export class SqliteService {
   readonly plans: PlanStore
   readonly scheduler: SchedulerStore
   readonly agentSessions: AgentSessionStore
+  readonly notes: NoteStore
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
@@ -76,6 +80,7 @@ export class SqliteService {
     this.plans = new PlanStore(this.db)
     this.scheduler = new SchedulerStore(this.db)
     this.agentSessions = new AgentSessionStore(this.db)
+    this.notes = new NoteStore(this.db)
     this.migrate()
   }
 
@@ -93,6 +98,7 @@ export class SqliteService {
     if (version < 6) this.runMigration(MIGRATION_006, 6)
     if (version < 7) this.runMigration(MIGRATION_007, 7)
     if (version < 8) this.runMigration(MIGRATION_008, 8)
+    if (version < 9) this.runMigration(MIGRATION_009, 9)
   }
 
   private runMigration(sql: string, targetVersion: number): void {

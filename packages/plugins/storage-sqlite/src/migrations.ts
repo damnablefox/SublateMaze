@@ -296,3 +296,42 @@ CREATE TABLE IF NOT EXISTS agent_events (
   PRIMARY KEY (session_id, seq)
 );
 `
+
+/** 迁移 009：笔记、wiki 出链与关联记录。 */
+export const MIGRATION_009 = `
+CREATE TABLE IF NOT EXISTS notes (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  title_key TEXT NOT NULL,
+  body TEXT NOT NULL DEFAULT '',
+  rel_path TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  deleted_at TEXT
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_notes_active_title
+  ON notes (title_key) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_notes_deleted ON notes (deleted_at);
+CREATE INDEX IF NOT EXISTS idx_notes_updated ON notes (updated_at);
+
+CREATE TABLE IF NOT EXISTS note_links (
+  note_id TEXT NOT NULL REFERENCES notes (id) ON DELETE CASCADE,
+  target_title TEXT NOT NULL,
+  target_key TEXT NOT NULL,
+  target_note_id TEXT,
+  PRIMARY KEY (note_id, target_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_note_links_target ON note_links (target_note_id);
+CREATE INDEX IF NOT EXISTS idx_note_links_key ON note_links (target_key);
+
+CREATE TABLE IF NOT EXISTS note_refs (
+  note_id TEXT NOT NULL REFERENCES notes (id) ON DELETE CASCADE,
+  ref_type TEXT NOT NULL,
+  ref_id TEXT NOT NULL,
+  PRIMARY KEY (note_id, ref_type, ref_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_note_refs_ref ON note_refs (ref_type, ref_id);
+`

@@ -36,6 +36,8 @@
       name: '@sublate/plugin-extractor'
     - id: search
       name: '@sublate/plugin-search'
+    - id: notes
+      name: '@sublate/plugin-notes'
     - id: course
       name: '@sublate/plugin-course'
     - id: planner

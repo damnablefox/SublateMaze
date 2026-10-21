@@ -31,6 +31,7 @@
     "@sublate/plugin-importer": "workspace:*",
     "@sublate/plugin-indexer": "workspace:*",
     "@sublate/plugin-native-bridge": "workspace:*",
+    "@sublate/plugin-notes": "workspace:*",
     "@sublate/plugin-parser": "workspace:*",
     "@sublate/plugin-planner": "workspace:*",
     "@sublate/plugin-scheduler": "workspace:*",
@@ -48,6 +49,7 @@
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0",
+    "yaml": "^2.8.0",
     "zod": "^4.0.0"
   }
 }

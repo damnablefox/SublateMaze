@@ -37,7 +37,7 @@ describe('storage-sqlite', () => {
     expect(
       (service.db.prepare('PRAGMA user_version').get() as { user_version: number })
         .user_version,
-    ).toBe(8)
+    ).toBe(9)
 
     service.close()
   })
