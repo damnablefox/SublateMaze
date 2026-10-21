@@ -13,6 +13,7 @@ export * from './notes.ts'
 export * from './plan.ts'
 export * from './review.ts'
 export * from './sets.ts'
+export * from './skills.ts'
 export * from './text.ts'
 
 /** 领域实体 id 统一使用字符串，便于跨进程与持久化。 */

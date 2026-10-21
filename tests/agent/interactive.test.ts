@@ -166,6 +166,35 @@ describe('Agent 交互式循环', () => {
     expect(stopped.error).toContain('相同')
   })
 
+  it('按目标选择技能并写入会话事件', async () => {
+    const { agent } = setup(['{"type":"done","answer":"完成"}'])
+
+    const started = await agent.start({ goal: '帮我复习今天到期的知识点' })
+    const skillEvent = started.events.find(event => event.type === 'skill')
+
+    expect(skillEvent?.payload).toMatchObject({
+      id: 'review',
+      title: '复习教练',
+    })
+  })
+
+  it('无命中目标时不写入技能事件', async () => {
+    const { agent } = setup(['{"type":"done","answer":"完成"}'])
+
+    const started = await agent.start({ goal: '随便聊聊' })
+
+    expect(started.events.some(event => event.type === 'skill')).toBe(false)
+  })
+
+  it('无 AI Key 时仍记录技能事件', async () => {
+    const { agent } = setup([], { available: false })
+
+    const started = await agent.start({ goal: '制定学习计划' })
+
+    expect(started.status).toBe('error')
+    expect(started.events.some(event => event.type === 'skill')).toBe(true)
+  })
+
   it('取消会话后状态为 cancelled', async () => {
     const { agent, tools, sessions } = setup([
       '{"type":"tool","tool":"demo.write","args":{"value":1}}',

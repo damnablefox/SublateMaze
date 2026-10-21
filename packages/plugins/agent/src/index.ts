@@ -1,4 +1,9 @@
 import type { Context } from '@deepseek-ai/cordis'
+import {
+  AGENT_SKILLS,
+  selectAgentSkill,
+  type AgentSkill,
+} from '@sublate/core'
 import type {
   AgentApi,
   AgentDecision,
@@ -67,6 +72,7 @@ interface RunState {
   answer?: string
   error?: string
   decide?: AgentRunOptions['decide']
+  skill?: AgentSkill
   newEvents: AgentEvent[]
 }
 
@@ -104,6 +110,14 @@ function safeJson(value: unknown): string {
 
 function truncate(text: string, limit: number): string {
   return text.length > limit ? `${text.slice(0, limit)}…` : text
+}
+
+function skillPayload(skill: AgentSkill): Record<string, unknown> {
+  return {
+    id: skill.id,
+    title: skill.title,
+    description: skill.description,
+  }
 }
 
 /** 去掉模型可能附带的代码块围栏，截取第一个 JSON 对象。 */
@@ -175,8 +189,15 @@ export class AgentService implements AgentApi {
 
     const budgetTokens = Math.max(1, Math.trunc(input.budgetTokens ?? DEFAULT_BUDGET_TOKENS))
     const session = this.sessions.start(goal, { budgetTokens })
-    const state = this.createState(session.id, goal, { budgetTokens, maxSteps: MAX_STEPS })
+    const skill = selectAgentSkill(goal)
+    const state = this.createState(session.id, goal, {
+      budgetTokens,
+      maxSteps: MAX_STEPS,
+      skill,
+    })
     this.runs.set(session.id, state)
+
+    if (skill) this.record(state, 'skill', skillPayload(skill))
 
     if (!this.ai.available) {
       return this.fail(state, '未配置 AI API Key，无法启动助手')
@@ -237,12 +258,16 @@ export class AgentService implements AgentApi {
   async run(options: AgentRunOptions): Promise<AgentRunResult> {
     const session = this.sessions.start(options.goal)
     const maxSteps = options.maxSteps ?? MAX_STEPS
+    const skill = selectAgentSkill(options.goal)
     const state = this.createState(session.id, options.goal, {
       budgetTokens: 0,
       maxSteps,
       decide: options.decide,
+      skill,
     })
     this.runs.set(session.id, state)
+
+    if (skill) this.record(state, 'skill', skillPayload(skill))
 
     while (!state.finished) {
       if (state.pending) {
@@ -270,7 +295,12 @@ export class AgentService implements AgentApi {
   private createState(
     sessionId: string,
     goal: string,
-    options: { budgetTokens: number; maxSteps: number; decide?: AgentRunOptions['decide'] },
+    options: {
+      budgetTokens: number
+      maxSteps: number
+      decide?: AgentRunOptions['decide']
+      skill?: AgentSkill
+    },
   ): RunState {
     return {
       sessionId,
@@ -284,6 +314,7 @@ export class AgentService implements AgentApi {
       cancelled: false,
       finished: false,
       decide: options.decide,
+      skill: options.skill,
       newEvents: [],
     }
   }
@@ -374,17 +405,24 @@ export class AgentService implements AgentApi {
 
     if (!this.ai.available) throw new Error('未配置 AI API Key，无法启动助手')
 
-    const toolList = this.tools
-      .list()
+    const registered = this.tools.list()
+    const skillTools = state.skill?.tools ?? []
+    const preferred = registered.filter(tool => skillTools.includes(tool.name))
+    const visible = preferred.length > 0 ? preferred : registered
+    const toolList = visible
       .map(tool => `- ${tool.name}（${tool.permission}）：${tool.description}`)
       .join('\n')
+
+    const systemContent = state.skill
+      ? `${SYSTEM_PROMPT}\n\n当前技能：${state.skill.title}（${state.skill.description}）\n${state.skill.prompt}`
+      : SYSTEM_PROMPT
 
     const result = await this.ai.chat({
       json: true,
       temperature: 0.2,
       maxTokens: 800,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: systemContent },
         {
           role: 'user',
           content: `学习目标：${state.goal}\n\n可用工具：\n${toolList}`,
@@ -467,6 +505,17 @@ function registerChannels(
   })
 
   register('agent:sessions', () => sessions.list(50))
+
+  register('agent:skills', () =>
+    AGENT_SKILLS.map(skill => ({
+      id: skill.id,
+      title: skill.title,
+      description: skill.description,
+      keywords: skill.keywords,
+      tools: skill.tools,
+      example: skill.example,
+    })),
+  )
 
   register('agent:session', (input: unknown) => {
     const { id } = SessionDetailInput.parse(input)
