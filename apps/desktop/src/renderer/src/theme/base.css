@@ -1,0 +1,105 @@
+/** 基础层：挂载、排版、滚动条、焦点环与圆角曲率。 */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-text);
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--label-primary);
+  background: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-autospace: normal;
+  overflow: hidden;
+}
+
+/* 表单控件不继承 body 字体，需要显式重置。 */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+p,
+pre {
+  margin: 0;
+}
+
+::selection {
+  background: var(--bg-selection);
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--state-business);
+  outline-offset: 2px;
+}
+
+/* 滚动条：只画 thumb，轨道保持透明，避免深色主题下出现原生亮条。 */
+body {
+  --scrollbar-width: 5px;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  body,
+  body * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--scrollbar-thumb);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 平滑超椭圆圆角；不支持的引擎保持普通圆角。 */
+@supports (corner-shape: superellipse(1.5)) {
+  *,
+  *::before,
+  *::after {
+    corner-shape: superellipse(1.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

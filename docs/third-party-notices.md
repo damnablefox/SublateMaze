@@ -22,7 +22,8 @@
 
 | 来源项目 | 上游 commit | 源文件 → 目标文件 | 使用方式 | 许可证 | 修改摘要 |
 |---|---|---|---|---|---|
-| 暂无 | - | - | - | - | - |
+| Montserrat | - | `montserrat-*.woff2` → `apps/desktop/src/renderer/src/theme/fonts/*.woff2` | 复制 | SIL OFL 1.1 | 原样复制字体文件，`Montserrat-OFL.txt` 随附 |
+| deepseek-harness | `687f282e` | `packages/client/ui-theme/src/styles/design-platform.css` → `apps/desktop/src/renderer/src/theme/tokens.css` | 重构 | MIT | 裁剪静态色板与 alias 分层并改为语义 token；去除平台分支与设置项变量 |
 
 ## 规则
 

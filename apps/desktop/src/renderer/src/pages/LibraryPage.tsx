@@ -1,26 +1,32 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { PlusIcon, SearchIcon, TrashIcon } from '../components/icons'
 import type { Carrier, ImportResult, SearchHit } from '../env'
 import { errorText, formatDate, formatSize } from '../format'
 
 interface LibraryPageProps {
   onOpen(carrierId: string, page?: number): void
-  onOpenTrash(): void
 }
 
 function summarizeImport(results: ImportResult[]): string {
-  const ready = results.filter((item) => item.status === 'ready')
-  const duplicated = results.filter((item) => item.duplicated)
-  const failed = results.filter((item) => item.status === 'failed')
+  const ready = results.filter(item => item.status === 'ready')
+  const duplicated = results.filter(item => item.duplicated)
+  const failed = results.filter(item => item.status === 'failed')
 
   const parts = [`导入完成：成功 ${ready.length} 项`]
   if (duplicated.length > 0) parts.push(`其中去重 ${duplicated.length} 项`)
   if (failed.length > 0) {
-    parts.push(`失败 ${failed.length} 项：${failed.map((item) => `${item.title}（${item.error}）`).join('；')}`)
+    parts.push(`失败 ${failed.length} 项：${failed.map(item => `${item.title}（${item.error}）`).join('；')}`)
   }
   return parts.join('，')
 }
 
-export function LibraryPage({ onOpen, onOpenTrash }: LibraryPageProps) {
+function StatusTag({ carrier }: { carrier: Carrier }) {
+  if (carrier.status === 'ready') return <span className="tag tone-success">可阅读</span>
+  if (carrier.status === 'failed') return <span className="tag tone-danger">失败</span>
+  return <span className="tag tone-warning">解析中</span>
+}
+
+export function LibraryPage({ onOpen }: LibraryPageProps) {
   const [carriers, setCarriers] = useState<Carrier[]>([])
   const [available, setAvailable] = useState(true)
   const [loading, setLoading] = useState(true)
@@ -123,146 +129,151 @@ export function LibraryPage({ onOpen, onOpenTrash }: LibraryPageProps) {
   }
 
   return (
-    <main className="shell">
-      <header className="topbar">
-        <div>
-          <h1>SublateMaze</h1>
-          <p className="subtitle">本地优先的个人学习平台与知识库</p>
-        </div>
-        <div className="actions">
-          {available ? (
-            <>
-              <button className="button ghost" type="button" onClick={onOpenTrash}>
-                回收站
-              </button>
-              <button
-                className="button primary"
-                type="button"
-                onClick={importFiles}
-                disabled={busy}
-              >
-                {busy ? '处理中…' : '导入 PDF'}
-              </button>
-            </>
-          ) : null}
-        </div>
-      </header>
-
-      {available ? (
-        <section className="panel">
-          <form className="row" onSubmit={importUrl}>
-            <input
-              className="input grow"
-              type="url"
-              placeholder="粘贴网页链接导入正文"
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              disabled={busy}
-            />
-            <button className="button" type="submit" disabled={busy || url.trim().length === 0}>
-              导入网页
-            </button>
-          </form>
-
-          <form className="row" onSubmit={search}>
-            <input
-              className="input grow"
-              type="search"
-              placeholder="全文检索（支持中文短语，例如「知识点」）"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-            <button className="button" type="submit" disabled={searching}>
-              {searching ? '检索中…' : '检索'}
-            </button>
-          </form>
-
-          {message ? <p className="notice">{message}</p> : null}
-          {error ? <p className="error">{error}</p> : null}
-        </section>
-      ) : (
-        <section className="panel">
-          <p className="muted">知识库插件未启用，导入与检索入口已隐藏。</p>
-        </section>
-      )}
-
-      {hits ? (
-        <section>
-          <div className="section-head">
-            <h2>检索结果</h2>
-            <button className="link" type="button" onClick={() => setHits(undefined)}>
-              清除
-            </button>
+    <div className="page">
+      <div className="page-inner">
+        <header className="page-header">
+          <div>
+            <h1>知识库</h1>
+            <p className="page-subtitle">导入 PDF 与网页，检索正文并继续阅读。</p>
           </div>
+          {available ? (
+            <button className="button primary" type="button" onClick={importFiles} disabled={busy}>
+              <PlusIcon />
+              {busy ? '处理中…' : '导入 PDF'}
+            </button>
+          ) : null}
+        </header>
 
-          {hits.length === 0 ? (
-            <p className="muted">没有匹配的内容。</p>
-          ) : (
-            <ul className="hits">
-              {hits.map((hit, index) => (
-                <li key={`${hit.carrierId}-${hit.pageNo}-${index}`}>
-                  <button
-                    type="button"
-                    className="hit"
-                    onClick={() => onOpen(hit.carrierId, hit.pageNo)}
-                  >
-                    <span className="hit-title">
-                      {hit.title} · 第 {hit.pageNo} 页
-                    </span>
-                    <span className="hit-snippet">{hit.snippet}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      ) : null}
+        {available ? (
+          <section className="toolbar-card">
+            <form className="field" onSubmit={search}>
+              <span className="field-icon">
+                <SearchIcon />
+              </span>
+              <input
+                className="field-input"
+                type="search"
+                placeholder="全文检索，支持中文短语"
+                value={query}
+                onChange={event => setQuery(event.target.value)}
+              />
+              <button className="button sm outline" type="submit" disabled={searching}>
+                {searching ? '检索中' : '检索'}
+              </button>
+            </form>
 
-      <section>
-        <div className="section-head">
-          <h2>知识库</h2>
-          <span className="muted">{carriers.length} 个载体</span>
-        </div>
+            <form className="field" onSubmit={importUrl}>
+              <span className="field-label">网页</span>
+              <input
+                className="field-input"
+                type="url"
+                placeholder="粘贴链接，抓取正文并导入"
+                value={url}
+                onChange={event => setUrl(event.target.value)}
+                disabled={busy}
+              />
+              <button className="button sm ghost" type="submit" disabled={busy || url.trim().length === 0}>
+                导入
+              </button>
+            </form>
 
-        {loading ? <p className="muted">加载中…</p> : null}
-        {!loading && carriers.length === 0 ? (
-          <p className="muted">还没有内容，先导入一个 PDF 或网页。</p>
+            {message ? <p className="notice">{message}</p> : null}
+            {error ? <p className="error">{error}</p> : null}
+          </section>
+        ) : (
+          <section className="toolbar-card">
+            <p className="muted">知识库插件未启用，导入与检索入口已隐藏。</p>
+          </section>
+        )}
+
+        {hits ? (
+          <section className="section">
+            <div className="section-head">
+              <h2>检索结果</h2>
+              <button className="link" type="button" onClick={() => setHits(undefined)}>
+                清除
+              </button>
+            </div>
+
+            {hits.length === 0 ? (
+              <p className="muted">没有匹配的内容。</p>
+            ) : (
+              <ul className="list">
+                {hits.map((hit, index) => (
+                  <li key={`${hit.carrierId}-${hit.pageNo}-${index}`} className="row">
+                    <button
+                      type="button"
+                      className="row-main"
+                      onClick={() => onOpen(hit.carrierId, hit.pageNo)}
+                    >
+                      <span className="row-body">
+                        <span className="row-title">
+                          <span className="row-title-text">{hit.title}</span>
+                          <span className="row-page">第 {hit.pageNo} 页</span>
+                        </span>
+                        <span className="row-snippet">{hit.snippet}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         ) : null}
 
-        <ul className="cards">
-          {carriers.map((carrier) => (
-            <li key={carrier.id} className={`card status-${carrier.status}`}>
-              <button type="button" className="card-main" onClick={() => onOpen(carrier.id)}>
-                <span className="card-head">
-                  <span className={`badge kind-${carrier.kind}`}>
-                    {carrier.kind === 'pdf' ? 'PDF' : '网页'}
+        <section className="section">
+          <div className="section-head">
+            <h2>全部载体</h2>
+            <span className="section-count">{carriers.length}</span>
+          </div>
+
+          {loading ? <p className="muted">加载中…</p> : null}
+
+          {!loading && carriers.length === 0 ? (
+            <div className="empty-state">
+              <p>还没有内容</p>
+              <span>导入一个 PDF 或网页，开始构建你的知识库。</span>
+            </div>
+          ) : null}
+
+          <ul className="list">
+            {carriers.map(carrier => (
+              <li key={carrier.id} className="row">
+                <button type="button" className="row-main" onClick={() => onOpen(carrier.id)}>
+                  <span className={`row-kind kind-${carrier.kind}`}>
+                    {carrier.kind === 'pdf' ? 'PDF' : 'WEB'}
                   </span>
-                  <span className="card-title">{carrier.title}</span>
-                </span>
 
-                <span className="card-meta">
-                  {carrier.pageCount} 页 · {formatSize(carrier.file.size)} ·{' '}
-                  {formatDate(carrier.updatedAt)}
-                </span>
+                  <span className="row-body">
+                    <span className="row-title">
+                      <span className="row-title-text">{carrier.title}</span>
+                    </span>
+                    <span className="row-meta">
+                      {carrier.pageCount} 页 · {formatSize(carrier.file.size)} ·{' '}
+                      {formatDate(carrier.updatedAt)}
+                      {carrier.error ? ` · ${carrier.error}` : ''}
+                    </span>
+                  </span>
 
-                <span className="card-state">
-                  {carrier.status === 'ready'
-                    ? '可阅读'
-                    : carrier.status === 'failed'
-                      ? `导入失败：${carrier.error ?? '未知原因'}`
-                      : '解析中…'}
-                </span>
-              </button>
+                  <span className="row-tags">
+                    <StatusTag carrier={carrier} />
+                  </span>
+                </button>
 
-              <button className="button ghost danger" type="button" onClick={() => remove(carrier)}>
-                删除
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <footer>M1 知识库 · Windows x64</footer>
-    </main>
+                <button
+                  className="icon-button danger"
+                  type="button"
+                  aria-label={`删除 ${carrier.title}`}
+                  title="移入回收站"
+                  onClick={() => remove(carrier)}
+                >
+                  <TrashIcon size={15} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </div>
   )
 }

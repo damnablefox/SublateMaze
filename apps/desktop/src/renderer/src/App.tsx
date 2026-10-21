@@ -1,7 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Sidebar, type SidebarView } from './components/Sidebar'
 import { LibraryPage } from './pages/LibraryPage'
 import { ReaderPage } from './pages/ReaderPage'
 import { TrashPage } from './pages/TrashPage'
+import {
+  applyTheme,
+  loadThemeMode,
+  saveThemeMode,
+  watchSystemTheme,
+  type ThemeMode,
+} from './theme/theme'
 
 type View =
   | { name: 'library' }
@@ -10,26 +18,47 @@ type View =
 
 export function App() {
   const [view, setView] = useState<View>({ name: 'library' })
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => loadThemeMode())
 
-  if (view.name === 'reader') {
-    return (
-      <ReaderPage
-        key={view.id}
-        id={view.id}
-        initialPage={view.page}
-        onBack={() => setView({ name: 'library' })}
-      />
-    )
+  useEffect(() => {
+    applyTheme(themeMode)
+    return watchSystemTheme(() => applyTheme(themeMode))
+  }, [themeMode])
+
+  function changeTheme(mode: ThemeMode) {
+    setThemeMode(mode)
+    saveThemeMode(mode)
   }
 
-  if (view.name === 'trash') {
-    return <TrashPage onBack={() => setView({ name: 'library' })} />
+  function navigate(target: SidebarView) {
+    setView({ name: target })
   }
 
   return (
-    <LibraryPage
-      onOpen={(id, page) => setView({ name: 'reader', id, page })}
-      onOpenTrash={() => setView({ name: 'trash' })}
-    />
+    <div className="app-frame">
+      <Sidebar
+        active={view.name}
+        themeMode={themeMode}
+        onNavigate={navigate}
+        onThemeModeChange={changeTheme}
+      />
+
+      <main className="app-main">
+        {view.name === 'reader' ? (
+          <ReaderPage
+            key={view.id}
+            id={view.id}
+            initialPage={view.page}
+            onBack={() => setView({ name: 'library' })}
+          />
+        ) : view.name === 'trash' ? (
+          <TrashPage onBack={() => setView({ name: 'library' })} />
+        ) : (
+          <LibraryPage
+            onOpen={(id, page) => setView({ name: 'reader', id, page })}
+          />
+        )}
+      </main>
+    </div>
   )
 }

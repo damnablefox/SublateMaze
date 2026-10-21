@@ -1,0 +1,165 @@
+/**
+ * 设计 token：参考 deepseek-harness 的静态色板与 alias 分层。
+ *
+ * 浅色为默认主题；深色在 body[data-ds-dark-theme] 下整体重绑。
+ * 组件只消费 alias token，不直接引用静态色值。
+ */
+
+:root {
+  --font-text: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  /* 代码字体显式列出 Consolas 等，避免 Windows 下中文回退到宋体。 */
+  --font-code: 'SF Mono', 'JetBrains Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo,
+    Courier, 'PingFang SC', 'Microsoft YaHei';
+  --font-brand: 'Montserrat', var(--font-text);
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-panel: 28px;
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur: 0.2s;
+  --dur-fast: 0.1s;
+  --dur-slow: 0.3s;
+  --focus-ring-width: 2px;
+
+  --shadow-stroke-color: rgba(0, 0, 0, 0.16);
+  --elevation-panel:
+    0 0 0 0.5px var(--shadow-stroke-color), 0 3px 8px 0 rgba(0, 0, 0, 0.03),
+    0 0 16px 0 rgba(0, 0, 0, 0.02);
+  --elevation-prominent:
+    0 0 0 0.5px var(--shadow-stroke-color), 0 3px 8px 0 rgba(0, 0, 0, 0.04),
+    0 0 20px 0 rgba(0, 0, 0, 0.05);
+}
+
+body {
+  --color-neutral-00: #ffffff;
+  --color-neutral-50: #f9fafb;
+  --color-neutral-60: #f5f6f7;
+  --color-neutral-75: #f1f3f5;
+  --color-neutral-100: #ebedf2;
+  --color-neutral-150: #e9ecf2;
+  --color-neutral-200: #e1e5ee;
+  --color-neutral-300: #cfd3d6;
+  --color-neutral-400: #adb2b8;
+  --color-neutral-500: #979da6;
+  --color-neutral-600: #81858c;
+  --color-neutral-700: #61666b;
+  --color-neutral-750: #43454a;
+  --color-neutral-800: #353638;
+  --color-neutral-850: #2c2c2e;
+  --color-neutral-875: #232324;
+  --color-neutral-900: #1b1b1c;
+  --color-neutral-950: #151517;
+  --color-neutral-1000: #0f1115;
+
+  --color-deepseek-400: #7aaaff;
+  --color-deepseek-450: #5686fe;
+  --color-deepseek-500: #4176e6;
+
+  --color-green-400: #4ed17e;
+  --color-green-500: #22c55e;
+  --color-red-400: #f25a5a;
+  --color-red-500: #ef4444;
+  --color-red-600: #ec1313;
+  --color-amber-400: #f7ad31;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #dd8629;
+
+  --bg-base: var(--color-neutral-00);
+  --bg-layer-1: var(--color-neutral-00);
+  --bg-layer-2: var(--color-neutral-00);
+  --bg-layer-3: var(--color-neutral-00);
+  --bg-panel: var(--color-neutral-60);
+  --bg-skeleton: rgba(0, 0, 0, 0.04);
+  --bg-selection: color-mix(in srgb, var(--color-deepseek-500) 24%, transparent);
+
+  --border-l1: rgba(0, 0, 0, 0.04);
+  --border-l2: rgba(0, 0, 0, 0.1);
+  --border-l3: rgba(0, 0, 0, 0.12);
+  --border-l4: rgba(0, 0, 0, 0.16);
+
+  --label-primary: var(--color-neutral-1000);
+  --label-secondary: var(--color-neutral-700);
+  --label-tertiary: var(--color-neutral-600);
+  --label-dimmed: var(--color-neutral-200);
+  --label-inverted: var(--color-neutral-00);
+
+  --interactive-hover: rgba(38, 49, 72, 0.06);
+  --interactive-active: rgba(38, 49, 72, 0.1);
+  --interactive-danger-hover: rgba(236, 19, 19, 0.05);
+
+  --button-primary-fill: var(--color-neutral-1000);
+  --button-primary-hover: var(--color-neutral-750);
+  --button-primary-foreground: var(--color-neutral-00);
+  --button-ghost-active-fill: var(--color-neutral-100);
+  --button-ghost-active-border: var(--color-neutral-500);
+
+  --sidebar-fill: var(--color-neutral-50);
+  --sidebar-nav-hover: var(--color-neutral-75);
+  --sidebar-nav-active: var(--color-neutral-100);
+
+  --state-business: var(--color-deepseek-500);
+  --state-success: var(--color-green-500);
+  --state-warn: var(--color-amber-500);
+  --state-error: var(--color-red-600);
+
+  --scrollbar-thumb: #d4d4d4;
+  --scrollbar-thumb-hover: #c7c7c7;
+  --mask: rgba(0, 0, 0, 0.24);
+  --toast-bg: var(--color-neutral-800);
+
+  color-scheme: light;
+}
+
+body[data-ds-dark-theme] {
+  --shadow-stroke-color: rgba(255, 255, 255, 0.16);
+
+  --bg-base: var(--color-neutral-950);
+  --bg-layer-1: var(--color-neutral-875);
+  --bg-layer-2: var(--color-neutral-850);
+  --bg-layer-3: var(--color-neutral-800);
+  --bg-panel: var(--color-neutral-900);
+  --bg-skeleton: rgba(255, 255, 255, 0.08);
+  --bg-selection: color-mix(in srgb, var(--color-deepseek-450) 40%, transparent);
+
+  --border-l1: rgba(255, 255, 255, 0.06);
+  --border-l2: rgba(255, 255, 255, 0.12);
+  --border-l3: rgba(255, 255, 255, 0.16);
+  --border-l4: rgba(255, 255, 255, 0.2);
+
+  --label-primary: var(--color-neutral-50);
+  --label-secondary: var(--color-neutral-300);
+  --label-tertiary: var(--color-neutral-400);
+  --label-dimmed: var(--color-neutral-750);
+  --label-inverted: var(--color-neutral-1000);
+
+  --interactive-hover: rgba(255, 255, 255, 0.08);
+  --interactive-active: rgba(255, 255, 255, 0.14);
+  --interactive-danger-hover: rgba(242, 90, 90, 0.15);
+
+  --button-primary-fill: var(--color-neutral-50);
+  --button-primary-hover: var(--color-neutral-100);
+  --button-primary-foreground: var(--color-neutral-1000);
+  --button-ghost-active-fill: var(--color-neutral-750);
+  --button-ghost-active-border: var(--color-neutral-600);
+
+  --sidebar-fill: var(--color-neutral-900);
+  --sidebar-nav-hover: var(--color-neutral-850);
+  --sidebar-nav-active: var(--color-neutral-750);
+
+  --state-business: var(--color-deepseek-400);
+  --state-success: var(--color-green-500);
+  --state-warn: var(--color-amber-500);
+  --state-error: var(--color-red-400);
+
+  --scrollbar-thumb: #3c3c3d;
+  --scrollbar-thumb-hover: #545557;
+  --mask: rgba(0, 0, 0, 0.5);
+  --toast-bg: var(--color-neutral-750);
+
+  color-scheme: dark;
+}

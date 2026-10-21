@@ -1,5 +1,4 @@
 /// <reference types="vite/client" />
-import './styles.css'
 
 export interface PluginState {
   id: string

@@ -39,6 +39,7 @@ pnpm build:native                      # 构建 Rust 哈希模块
 pnpm dev:kernel                        # 加载核心 profile，打印插件树
 pnpm --filter @sublate/desktop dev     # 启动 Electron 窗口（含窗口/IPC 插件）
 pnpm typecheck
+pnpm lint
 pnpm test
 cargo test
 ```
@@ -64,7 +65,8 @@ tests/                kernel / 插件 / 后续 e2e 测试
 - 先写规格（`docs/specs/`），再实现；架构取舍写入 `docs/adr/`。
 - `packages/core` 禁止 import Electron、`node:fs`、`node:path`、`node:child_process`。
 - 插件之间不得互相 import，只能通过 `ctx` 服务与事件协作。
-- 所有提交须通过 `pnpm typecheck` 与 `pnpm test`。
+- 界面视觉与代码风格参考 deepseek-harness：设计 token 集中在 `apps/desktop/src/renderer/src/theme/`，格式由 `pnpm lint` 约束。
+- 所有提交须通过 `pnpm typecheck`、`pnpm lint` 与 `pnpm test`。
 
 AI 协作约定见 [AGENTS.md](./AGENTS.md)。
 

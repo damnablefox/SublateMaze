@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import * as pdfjs from 'pdfjs-dist'
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from 'pdfjs-dist'
+import { ArrowLeftIcon } from '../components/icons'
 import type { CarrierDetail } from '../env'
 import { errorText } from '../format'
 
@@ -20,12 +21,15 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
 
   const [page, setPage] = useState(1)
   const [pageInput, setPageInput] = useState('1')
-  const [scale, setScale] = useState(1.2)
+  const [scale, setScale] = useState<number | 'fit'>('fit')
+  const [actualScale, setActualScale] = useState(1)
+  const [stageWidth, setStageWidth] = useState(0)
   const [pageText, setPageText] = useState('')
 
   const [pdf, setPdf] = useState<PDFDocumentProxy>()
   const [pdfError, setPdfError] = useState<string>()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const stageRef = useRef<HTMLElement>(null)
 
   const carrier = detail?.carrier
   const pageCount = Math.max(1, carrier?.pageCount ?? 1)
@@ -67,6 +71,19 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
 
     return () => window.clearTimeout(timer)
   }, [id, page, detail])
+
+  // 记录阅读区宽度，默认缩放按宽度自适应，避免大页面在窄列里横向溢出
+  useEffect(() => {
+    const node = stageRef.current
+    if (!node) return
+
+    const observer = new ResizeObserver((entries) => {
+      setStageWidth(entries[0]?.contentRect.width ?? 0)
+    })
+    observer.observe(node)
+
+    return () => observer.disconnect()
+  }, [carrier?.id])
 
   // 读取当前页提取文本，供侧栏显示与选中复制
   useEffect(() => {
@@ -124,7 +141,7 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
 
   // 渲染当前页到画布
   useEffect(() => {
-    if (!pdf) return
+    if (!pdf || stageWidth <= 0) return
 
     let cancelled = false
     let renderTask: RenderTask | undefined
@@ -136,7 +153,12 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
       const canvas = canvasRef.current
       if (!canvas) return
 
-      const viewport = pdfPage.getViewport({ scale })
+      const base = pdfPage.getViewport({ scale: 1 })
+      const fitScale = Math.min(1.6, Math.max(0.5, stageWidth / base.width))
+      const effectiveScale = scale === 'fit' ? fitScale : scale
+      setActualScale(effectiveScale)
+
+      const viewport = pdfPage.getViewport({ scale: effectiveScale })
       const ratio = window.devicePixelRatio || 1
       canvas.width = Math.floor(viewport.width * ratio)
       canvas.height = Math.floor(viewport.height * ratio)
@@ -167,7 +189,7 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
       cancelled = true
       renderTask?.cancel()
     }
-  }, [pdf, page, scale])
+  }, [pdf, page, scale, stageWidth])
 
   // 键盘翻页
   useEffect(() => {
@@ -177,10 +199,10 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
 
       if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
         event.preventDefault()
-        setPage((value) => Math.max(1, value - 1))
+        setPage(value => Math.max(1, value - 1))
       } else if (event.key === 'ArrowRight' || event.key === 'PageDown') {
         event.preventDefault()
-        setPage((value) => Math.min(pageCount, value + 1))
+        setPage(value => Math.min(pageCount, value + 1))
       }
     }
 
@@ -200,41 +222,46 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
 
   if (loading) {
     return (
-      <main className="shell">
-        <p className="muted">正在打开载体…</p>
-      </main>
+      <div className="page">
+        <div className="page-inner">
+          <p className="muted">正在打开载体…</p>
+        </div>
+      </div>
     )
   }
 
   if (error || !carrier) {
     return (
-      <main className="shell">
-        <p className="error">无法打开载体：{error ?? '载体不存在'}</p>
-        <button className="button" type="button" onClick={onBack}>
-          返回知识库
-        </button>
-      </main>
+      <div className="page">
+        <div className="page-inner">
+          <p className="error">无法打开载体：{error ?? '载体不存在'}</p>
+          <button className="button outline" type="button" onClick={onBack}>
+            <ArrowLeftIcon />
+            返回知识库
+          </button>
+        </div>
+      </div>
     )
   }
 
   return (
-    <main className="reader">
-      <header className="reader-topbar">
-        <div className="reader-title">
-          <button className="button ghost" type="button" onClick={onBack}>
-            ← 返回
+    <div className="reader">
+      <header className="reader-toolbar">
+        <div className="reader-heading">
+          <button className="icon-button" type="button" aria-label="返回知识库" onClick={onBack}>
+            <ArrowLeftIcon />
           </button>
-          <span className={`badge kind-${carrier.kind}`}>
-            {carrier.kind === 'pdf' ? 'PDF' : '网页'}
+          <span className="tag tone-outline">{carrier.kind === 'pdf' ? 'PDF' : '网页'}</span>
+          <span className="reader-title" title={carrier.title}>
+            {carrier.title}
           </span>
-          <strong>{carrier.title}</strong>
         </div>
 
         <div className="reader-controls">
           <button
-            className="button ghost"
+            className="button sm ghost"
             type="button"
-            onClick={() => setPage((value) => Math.max(1, value - 1))}
+            onClick={() => setPage(value => Math.max(1, value - 1))}
             disabled={page <= 1}
           >
             上一页
@@ -242,18 +269,18 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
 
           <form className="page-jump" onSubmit={jump}>
             <input
-              className="input page-input"
+              className="page-input"
               value={pageInput}
-              onChange={(event) => setPageInput(event.target.value)}
+              onChange={event => setPageInput(event.target.value)}
               aria-label="页码"
             />
-            <span className="muted">/ {pageCount}</span>
+            <span className="page-total">/ {pageCount}</span>
           </form>
 
           <button
-            className="button ghost"
+            className="button sm ghost"
             type="button"
-            onClick={() => setPage((value) => Math.min(pageCount, value + 1))}
+            onClick={() => setPage(value => Math.min(pageCount, value + 1))}
             disabled={page >= pageCount}
           >
             下一页
@@ -262,17 +289,19 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
           {carrier.kind === 'pdf' ? (
             <div className="zoom">
               <button
-                className="button ghost"
+                className="icon-button"
                 type="button"
-                onClick={() => setScale((value) => Math.max(0.6, Number((value - 0.2).toFixed(2))))}
+                aria-label="缩小"
+                onClick={() => setScale(Math.max(0.5, Number((actualScale - 0.2).toFixed(2))))}
               >
                 −
               </button>
-              <span className="muted">{Math.round(scale * 100)}%</span>
+              <span className="zoom-label">{Math.round(actualScale * 100)}%</span>
               <button
-                className="button ghost"
+                className="icon-button"
                 type="button"
-                onClick={() => setScale((value) => Math.min(3, Number((value + 0.2).toFixed(2))))}
+                aria-label="放大"
+                onClick={() => setScale(Math.min(3, Number((actualScale + 0.2).toFixed(2))))}
               >
                 +
               </button>
@@ -282,14 +311,12 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
       </header>
 
       <div className="reader-body">
-        <section className="reader-main">
+        <section className="reader-canvas" ref={stageRef}>
+          {pdfError ? <p className="error">PDF 渲染失败：{pdfError}</p> : null}
           {carrier.kind === 'pdf' ? (
-            <>
-              {pdfError ? <p className="error">PDF 渲染失败：{pdfError}</p> : null}
-              <div className="pdf-stage">
-                <canvas ref={canvasRef} />
-              </div>
-            </>
+            <div className="pdf-stage">
+              <canvas ref={canvasRef} />
+            </div>
           ) : (
             <article className="web-page">
               <pre>{pageText || '本页没有可显示的正文。'}</pre>
@@ -304,6 +331,6 @@ export function ReaderPage({ id, initialPage, onBack }: ReaderPageProps) {
           <pre className="page-text">{pageText || '本页没有可提取的文本。'}</pre>
         </aside>
       </div>
-    </main>
+    </div>
   )
 }

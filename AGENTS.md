@@ -44,6 +44,16 @@ cargo test
 6. `packages/shared` 的契约变更必须同步更新调用方与测试。
 7. 插件源码由 Electron 直接以 TypeScript strip-only 模式执行：**禁止参数属性**（`constructor(private x: T)`），相对导入必须带 `.ts` 后缀。
 
+## 视觉与代码规范
+
+界面视觉与交互参考 deepseek-harness（MIT），代码风格与其保持一致：
+
+- 设计 token 集中在 `apps/desktop/src/renderer/src/theme/tokens.css`；组件只消费 alias token（`--bg-*`、`--label-*`、`--border-*`、`--state-*`），不写死颜色。
+- 浅色为默认主题，深色通过 `body[data-ds-dark-theme]` 整体切换；新增界面必须同时检查两种主题。
+- 主按钮使用黑白反转（浅色黑底白字、深色白底黑字）；描边统一 0.5px 发丝线；圆角走 `--radius-*` 阶梯。
+- 品牌字使用 Montserrat（SIL OFL 1.1，许可证随仓库分发）；正文用系统字体栈，代码用显式等宽字体栈。
+- 代码格式：2 空格缩进、单引号、无分号、尾逗号、行宽 ≤ 140；提交前运行 `pnpm lint`，CI 执行同一命令。
+
 ## 实现流程
 
 1. 在 `docs/specs/` 写规格：目标、非目标、接口、数据变更、验收标准、测试点；
