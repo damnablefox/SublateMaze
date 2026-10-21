@@ -1,7 +1,7 @@
 import type { ThemeMode } from '../theme/theme'
-import { LibraryIcon, MoonIcon, SunIcon, SystemIcon, TrashIcon } from './icons'
+import { KnowledgeIcon, LibraryIcon, MoonIcon, SunIcon, SystemIcon, TrashIcon } from './icons'
 
-export type SidebarView = 'library' | 'trash'
+export type SidebarView = 'library' | 'knowledge' | 'trash'
 
 interface SidebarProps {
   active: SidebarView | 'reader'
@@ -34,6 +34,14 @@ export function Sidebar({ active, themeMode, onNavigate, onThemeModeChange }: Si
         >
           <LibraryIcon />
           <span>知识库</span>
+        </button>
+        <button
+          type="button"
+          className={`nav-item${current === 'knowledge' ? ' active' : ''}`}
+          onClick={() => onNavigate('knowledge')}
+        >
+          <KnowledgeIcon />
+          <span>知识点</span>
         </button>
         <button
           type="button"

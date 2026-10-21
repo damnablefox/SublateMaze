@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Sidebar, type SidebarView } from './components/Sidebar'
+import { KnowledgePage } from './pages/KnowledgePage'
 import { LibraryPage } from './pages/LibraryPage'
 import { ReaderPage } from './pages/ReaderPage'
 import { TrashPage } from './pages/TrashPage'
@@ -13,6 +14,7 @@ import {
 
 type View =
   | { name: 'library' }
+  | { name: 'knowledge' }
   | { name: 'reader'; id: string; page?: number }
   | { name: 'trash' }
 
@@ -53,6 +55,8 @@ export function App() {
           />
         ) : view.name === 'trash' ? (
           <TrashPage onBack={() => setView({ name: 'library' })} />
+        ) : view.name === 'knowledge' ? (
+          <KnowledgePage />
         ) : (
           <LibraryPage
             onOpen={(id, page) => setView({ name: 'reader', id, page })}

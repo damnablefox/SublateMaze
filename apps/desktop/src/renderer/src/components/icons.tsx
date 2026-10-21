@@ -39,6 +39,15 @@ export function TrashIcon({ size = 16 }: IconProps) {
   )
 }
 
+export function KnowledgeIcon({ size = 16 }: IconProps) {
+  return (
+    <svg {...base(size)}>
+      <path d="M8 2.5a3.5 3.5 0 0 0-2.1 6.3c.4.3.6.7.6 1.2v.5h3v-.5c0-.5.2-.9.6-1.2A3.5 3.5 0 0 0 8 2.5Z" />
+      <path d="M6.5 12.5h3M7 14h2" />
+    </svg>
+  )
+}
+
 export function PlusIcon({ size = 16 }: IconProps) {
   return (
     <svg {...base(size)}>

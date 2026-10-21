@@ -366,6 +366,115 @@
   color: var(--label-tertiary);
 }
 
+/* ---------- 知识点 ---------- */
+
+.select {
+  height: 32px;
+  max-width: 220px;
+  padding: 0 10px;
+  border: 0.5px solid var(--border-l3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-layer-1);
+  color: var(--label-primary);
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.knowledge-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.selection-bar {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.selection-bar .actions {
+  align-items: center;
+}
+
+.knowledge-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.unit-block {
+  margin-top: 18px;
+}
+
+.unit-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 4px;
+  margin-bottom: 4px;
+}
+
+.unit-head h2 {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--label-primary);
+}
+
+.unit-range {
+  flex: none;
+  font-family: var(--font-code);
+  font-size: 11px;
+  color: var(--label-tertiary);
+}
+
+.point-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: var(--radius-md);
+  transition: background var(--dur) var(--ease);
+}
+
+.point-row:hover {
+  background: var(--interactive-hover);
+}
+
+.checkbox {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 4px;
+  accent-color: var(--label-primary);
+}
+
+.point-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.point-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.point-editor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
 /* ---------- 区块与列表 ---------- */
 
 .section {

@@ -237,6 +237,106 @@ export class KnowledgeStore {
       .run(pageStart, Math.max(pageStart, pageEnd), new Date().toISOString(), id)
   }
 
+  /** 合并多个草稿知识点：保留最早一条的标题，内容按页序拼接。 */
+  mergePoints(ids: string[]): string {
+    const unique = [...new Set(ids)]
+    if (unique.length < 2) {
+      throw new Error('至少选择两个知识点才能合并')
+    }
+
+    const rows = this.loadPointsByIds(unique)
+    if (rows.length !== unique.length) {
+      throw new Error('部分知识点不存在')
+    }
+    if (rows.some(row => row.status !== 'draft')) {
+      throw new Error('只能合并草稿状态的知识点')
+    }
+
+    const sorted = rows.sort(
+      (left, right) => left.page_start - right.page_start || left.created_at.localeCompare(right.created_at),
+    )
+    const first = sorted[0]!
+    const content = sorted.map(row => row.content.trim()).filter(Boolean).join('\n\n')
+    const pageStart = Math.min(...sorted.map(row => row.page_start))
+    const pageEnd = Math.max(...sorted.map(row => row.page_end))
+    const timestamp = new Date().toISOString()
+
+    this.db.exec('BEGIN')
+    try {
+      this.db
+        .prepare(
+          `UPDATE knowledge_points
+           SET content = ?, page_start = ?, page_end = ?, updated_at = ?
+           WHERE id = ?`,
+        )
+        .run(content, pageStart, pageEnd, timestamp, first.id)
+
+      this.db
+        .prepare(`DELETE FROM knowledge_points WHERE id IN (${placeholders(unique.length - 1)})`)
+        .run(...unique.filter(id => id !== first.id))
+
+      this.db.exec('COMMIT')
+    } catch (error) {
+      this.db.exec('ROLLBACK')
+      throw error
+    }
+
+    return first.id
+  }
+
+  /** 按页拆分草稿知识点：前半结束于 splitPage-1，后半从 splitPage 开始。 */
+  splitPoint(id: string, splitPage: number): { firstId: string; secondId: string } {
+    const row = this.db
+      .prepare(
+        `SELECT id, unit_id, carrier_id, title, content, page_start, page_end,
+                status, source, created_at, updated_at
+         FROM knowledge_points WHERE id = ?`,
+      )
+      .get(id) as PointRow | undefined
+
+    if (!row) throw new Error('知识点不存在')
+    if (row.status !== 'draft') throw new Error('只能拆分草稿状态的知识点')
+    if (splitPage <= row.page_start || splitPage > row.page_end) {
+      throw new Error('拆分页码必须落在当前知识点范围内')
+    }
+
+    const secondId = randomUUID()
+    const timestamp = new Date().toISOString()
+
+    this.db.exec('BEGIN')
+    try {
+      this.db
+        .prepare('UPDATE knowledge_points SET page_end = ?, updated_at = ? WHERE id = ?')
+        .run(splitPage - 1, timestamp, id)
+
+      this.db
+        .prepare(
+          `INSERT INTO knowledge_points
+             (id, unit_id, carrier_id, title, content, page_start, page_end, status, source, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`,
+        )
+        .run(
+          secondId,
+          row.unit_id,
+          row.carrier_id,
+          `${row.title}（续）`,
+          row.content,
+          splitPage,
+          row.page_end,
+          row.source,
+          timestamp,
+          timestamp,
+        )
+
+      this.db.exec('COMMIT')
+    } catch (error) {
+      this.db.exec('ROLLBACK')
+      throw error
+    }
+
+    return { firstId: id, secondId }
+  }
+
   pointStats(carrierId: string): PointStats {
     const rows = this.db
       .prepare(
@@ -265,5 +365,18 @@ export class KnowledgeStore {
          WHERE id IN (${placeholders(ids.length)})`,
       )
       .run(status, new Date().toISOString(), ...ids)
+  }
+
+  private loadPointsByIds(ids: string[]): PointRow[] {
+    if (ids.length === 0) return []
+
+    return this.db
+      .prepare(
+        `SELECT id, unit_id, carrier_id, title, content, page_start, page_end,
+                status, source, created_at, updated_at
+         FROM knowledge_points
+         WHERE id IN (${placeholders(ids.length)})`,
+      )
+      .all(...ids) as unknown as PointRow[]
   }
 }

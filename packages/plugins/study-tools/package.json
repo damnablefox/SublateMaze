@@ -1,0 +1,17 @@
+{
+  "name": "@sublate/plugin-study-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "学习域 Agent 工具：检索知识库、读取载体、生成知识点草稿",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@sublate/plugin-sdk": "workspace:*",
+    "zod": "^4.0.0"
+  }
+}

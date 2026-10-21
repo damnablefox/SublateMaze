@@ -36,5 +36,7 @@
       name: '@sublate/plugin-extractor'
     - id: search
       name: '@sublate/plugin-search'
+    - id: study-tools
+      name: '@sublate/plugin-study-tools'
     - id: ui-shell
       name: '@sublate/plugin-ui-shell'

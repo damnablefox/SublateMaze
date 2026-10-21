@@ -60,6 +60,62 @@ export interface CarrierDetail {
   readState?: ReadState
 }
 
+export interface KnowledgeUnit {
+  id: string
+  carrierId: string
+  title: string
+  pageStart?: number
+  pageEnd?: number
+  status: 'draft' | 'confirmed'
+  source: 'ai' | 'manual'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface KnowledgePoint {
+  id: string
+  unitId?: string
+  carrierId: string
+  title: string
+  content: string
+  pageStart: number
+  pageEnd: number
+  status: 'draft' | 'confirmed' | 'rejected'
+  source: 'ai' | 'manual'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface KnowledgeStats {
+  total: number
+  draft: number
+  confirmed: number
+  rejected: number
+}
+
+export interface AiJobSummary {
+  id: string
+  kind: string
+  status: 'pending' | 'running' | 'done' | 'failed' | 'cancelled'
+  error?: string
+  createdAt: string
+}
+
+export interface KnowledgeSnapshot {
+  units: KnowledgeUnit[]
+  points: KnowledgePoint[]
+  stats: KnowledgeStats
+  jobs: AiJobSummary[]
+}
+
+export interface ExtractResult {
+  jobId: string
+  status: 'done' | 'failed'
+  unitCount: number
+  pointCount: number
+  error?: string
+}
+
 declare global {
   interface Window {
     sublate: {
@@ -78,6 +134,15 @@ declare global {
         restore(id: string): Promise<void>
         trash(): Promise<Carrier[]>
         search(text: string): Promise<SearchHit[]>
+      }
+      knowledge: {
+        list(carrierId: string): Promise<KnowledgeSnapshot>
+        extract(carrierId: string): Promise<ExtractResult>
+        confirm(ids: string[]): Promise<void>
+        reject(ids: string[]): Promise<void>
+        setAnchor(id: string, pageStart: number, pageEnd: number): Promise<void>
+        merge(ids: string[]): Promise<{ id: string }>
+        split(id: string, splitPage: number): Promise<{ firstId: string; secondId: string }>
       }
     }
   }

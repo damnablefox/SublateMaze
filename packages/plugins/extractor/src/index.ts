@@ -43,10 +43,40 @@ interface JobLike {
   id: string
 }
 
+interface KnowledgePointLike {
+  id: string
+  unitId?: string
+  carrierId: string
+  title: string
+  content: string
+  pageStart: number
+  pageEnd: number
+  status: string
+}
+
+interface KnowledgeUnitLike {
+  id: string
+  carrierId: string
+  title: string
+  pageStart?: number
+  pageEnd?: number
+  status: string
+}
+
 interface DbLike {
   carriers: { get(id: string): CarrierLike | undefined }
   chunks: { listChunks(carrierId: string): ChunkLike[] }
-  knowledge: { replaceDraft(carrierId: string, draft: { units: UnitDraftLike[] }): void }
+  knowledge: {
+    replaceDraft(carrierId: string, draft: { units: UnitDraftLike[] }): void
+    listUnits(carrierId: string): KnowledgeUnitLike[]
+    listPoints(carrierId: string): KnowledgePointLike[]
+    confirmPoints(ids: string[]): void
+    rejectPoints(ids: string[]): void
+    updatePointAnchor(id: string, pageStart: number, pageEnd: number): void
+    mergePoints(ids: string[]): string
+    splitPoint(id: string, splitPage: number): { firstId: string; secondId: string }
+    pointStats(carrierId: string): { total: number; draft: number; confirmed: number; rejected: number }
+  }
   aiJobs: {
     create(input: { kind: string; refId?: string }): JobLike
     update(
@@ -60,7 +90,12 @@ interface DbLike {
         completionTokens?: number
       },
     ): void
+    list(limit?: number): unknown[]
   }
+}
+
+interface IpcLike {
+  register(channel: string, handler: (...args: any[]) => any): () => void
 }
 
 interface AiLike {
@@ -300,8 +335,79 @@ export function apply(ctx: Context) {
     throw new Error('extractor 需要 db、ai 服务')
   }
 
-  ctx.provide('extractor', new ExtractorService({ db, ai }))
+  const service = new ExtractorService({ db, ai })
+  ctx.provide('extractor', service)
+
+  const ipc = ctx.get('ipc') as IpcLike | undefined
+  if (ipc) {
+    registerChannels(ctx, service, db, ipc)
+  }
+
   ctx.logger('extractor').info(
     ai.available ? '知识点抽取服务已就绪' : '知识点抽取服务已加载（未配置 AI Key）',
   )
+}
+
+const CarrierInput = z.object({ carrierId: z.string().min(1) })
+const IdsInput = z.object({ ids: z.array(z.string().min(1)).min(1) })
+const AnchorInput = z.object({
+  id: z.string().min(1),
+  pageStart: z.number().int().positive(),
+  pageEnd: z.number().int().positive(),
+})
+const SplitInput = z.object({
+  id: z.string().min(1),
+  splitPage: z.number().int().positive(),
+})
+
+/** 知识点页面的读写频道；全部经 zod 校验输入。 */
+function registerChannels(ctx: Context, service: ExtractorService, db: DbLike, ipc: IpcLike) {
+  const disposers: (() => void)[] = []
+  const register = (channel: string, handler: (...args: any[]) => any) => {
+    disposers.push(ipc.register(channel, handler))
+  }
+
+  register('knowledge:list', (input: unknown) => {
+    const { carrierId } = CarrierInput.parse(input)
+    return {
+      units: db.knowledge.listUnits(carrierId),
+      points: db.knowledge.listPoints(carrierId),
+      stats: db.knowledge.pointStats(carrierId),
+      jobs: db.aiJobs.list(5),
+    }
+  })
+
+  register('knowledge:extract', (input: unknown) => {
+    const { carrierId } = CarrierInput.parse(input)
+    return service.extract(carrierId)
+  })
+
+  register('knowledge:confirm', (input: unknown) => {
+    const { ids } = IdsInput.parse(input)
+    db.knowledge.confirmPoints(ids)
+  })
+
+  register('knowledge:reject', (input: unknown) => {
+    const { ids } = IdsInput.parse(input)
+    db.knowledge.rejectPoints(ids)
+  })
+
+  register('knowledge:anchor', (input: unknown) => {
+    const { id, pageStart, pageEnd } = AnchorInput.parse(input)
+    db.knowledge.updatePointAnchor(id, pageStart, pageEnd)
+  })
+
+  register('knowledge:merge', (input: unknown) => {
+    const { ids } = IdsInput.parse(input)
+    return { id: db.knowledge.mergePoints(ids) }
+  })
+
+  register('knowledge:split', (input: unknown) => {
+    const { id, splitPage } = SplitInput.parse(input)
+    return db.knowledge.splitPoint(id, splitPage)
+  })
+
+  ctx.effect(() => () => {
+    for (const dispose of disposers) dispose()
+  })
 }

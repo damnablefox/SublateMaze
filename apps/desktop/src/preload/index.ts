@@ -19,4 +19,15 @@ contextBridge.exposeInMainWorld('sublate', {
     trash: () => ipcRenderer.invoke('trash:list'),
     search: (text: string) => ipcRenderer.invoke('search:query', { text }),
   },
+  knowledge: {
+    list: (carrierId: string) => ipcRenderer.invoke('knowledge:list', { carrierId }),
+    extract: (carrierId: string) => ipcRenderer.invoke('knowledge:extract', { carrierId }),
+    confirm: (ids: string[]) => ipcRenderer.invoke('knowledge:confirm', { ids }),
+    reject: (ids: string[]) => ipcRenderer.invoke('knowledge:reject', { ids }),
+    setAnchor: (id: string, pageStart: number, pageEnd: number) =>
+      ipcRenderer.invoke('knowledge:anchor', { id, pageStart, pageEnd }),
+    merge: (ids: string[]) => ipcRenderer.invoke('knowledge:merge', { ids }),
+    split: (id: string, splitPage: number) =>
+      ipcRenderer.invoke('knowledge:split', { id, splitPage }),
+  },
 })

@@ -36,6 +36,7 @@
     "@sublate/plugin-session": "workspace:*",
     "@sublate/plugin-storage-lancedb": "workspace:*",
     "@sublate/plugin-storage-sqlite": "workspace:*",
+    "@sublate/plugin-study-tools": "workspace:*",
     "@sublate/plugin-tools": "workspace:*",
     "@sublate/plugin-vault": "workspace:*",
     "@sublate/shared": "workspace:*",

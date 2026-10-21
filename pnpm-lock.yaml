@@ -59,6 +59,9 @@ importers:
       '@sublate/plugin-storage-sqlite':
         specifier: workspace:*
         version: link:packages/plugins/storage-sqlite
+      '@sublate/plugin-study-tools':
+        specifier: workspace:*
+        version: link:packages/plugins/study-tools
       '@sublate/plugin-tools':
         specifier: workspace:*
         version: link:packages/plugins/tools
@@ -137,6 +140,9 @@ importers:
       '@sublate/plugin-storage-sqlite':
         specifier: workspace:*
         version: link:../../packages/plugins/storage-sqlite
+      '@sublate/plugin-study-tools':
+        specifier: workspace:*
+        version: link:../../packages/plugins/study-tools
       '@sublate/plugin-tools':
         specifier: workspace:*
         version: link:../../packages/plugins/tools
@@ -379,6 +385,18 @@ importers:
       '@sublate/plugin-sdk':
         specifier: workspace:*
         version: link:../../plugin-sdk
+
+  packages/plugins/study-tools:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: 4.0.5
+        version: 4.0.5(@deepseek-ai/cordis-plugin-include@1.0.10)(@deepseek-ai/cordis-plugin-loader@1.0.6)
+      '@sublate/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../plugin-sdk
+      zod:
+        specifier: ^4.0.0
+        version: 4.6.7
 
   packages/plugins/tools:
     dependencies:
