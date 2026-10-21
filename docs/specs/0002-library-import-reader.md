@@ -201,9 +201,10 @@ removeCarrier(carrierId: string): void
 - 插件树：13 个插件全部 `running`（新增 parser、importer、search），IPC 与自定义事件正常工作；
 - 测试：40 passed（新增载体仓储 7、解析 4、导入 6、检索 6）；
 - Electron 端到端冒烟：导入 PDF → `ready`，页文本、检索命中、阅读位置保存均正确，阅读页 canvas 成功渲染（734×950）；
+- 1000 页文本型 PDF（330 KB）解析耗时约 2.6 秒（本机，含 pdfjs 首次加载），满足 ≤3 秒指标；
 - 约定调整一：preload 以 ESM 构建，窗口改为 `sandbox: false`，仍保留 `contextIsolation: true` 与 `nodeIntegration: false`；沙箱模式下 ESM preload 不执行，`window.sublate` 会缺失；
 - 约定调整二：自定义协议在 `file://` 页面下被 Chromium 拦截，改为 IPC 传字节；
-- 待验证：真实 1000 页教材 PDF 的 3 秒解析指标；网页抓取目前按 UTF-8 解码。
+- 待验证：网页抓取目前按 UTF-8 解码；真实教材 PDF 的字体与排版兼容性需人工抽样。
 
 ## 风险与后续
 
