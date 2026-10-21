@@ -87,6 +87,16 @@ export function OverviewIcon({ size = 16 }: IconProps) {
   )
 }
 
+export function AgentIcon({ size = 16 }: IconProps) {
+  return (
+    <svg {...base(size)}>
+      <rect x="2.5" y="3.5" width="11" height="9" rx="2" />
+      <path d="M8 12.5v2M5.5 15.5h5" />
+      <path d="M5.5 7h5M5.5 9.5h3" />
+    </svg>
+  )
+}
+
 export function PlusIcon({ size = 16 }: IconProps) {
   return (
     <svg {...base(size)}>

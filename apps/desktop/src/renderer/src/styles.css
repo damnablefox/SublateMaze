@@ -1370,6 +1370,125 @@
   gap: 18px;
 }
 
+/* ---------- 助手 ---------- */
+
+.agent-composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border: 0.5px solid var(--border-l2);
+  border-radius: var(--radius-md);
+  background: var(--bg-layer-1);
+}
+
+.agent-composer .text-input {
+  flex: 1;
+}
+
+.agent-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agent-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agent-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border: 0.5px solid var(--border-l2);
+  border-radius: var(--radius-lg);
+  background: var(--bg-layer-1);
+}
+
+.agent-message {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--interactive-active);
+}
+
+.agent-message p {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--label-primary);
+}
+
+.agent-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--label-secondary);
+}
+
+.agent-tool-name {
+  font-family: var(--font-code);
+  font-size: 12px;
+  color: var(--label-primary);
+}
+
+.tool-card,
+.confirm-box {
+  padding: 10px 12px;
+  border: 0.5px solid var(--border-l2);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+}
+
+.tool-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tool-json {
+  max-height: 220px;
+  overflow: auto;
+  margin: 0;
+  font-family: var(--font-code);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--label-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tool-result {
+  padding: 8px 12px;
+  border-left: 2px solid var(--border-l4);
+}
+
+.agent-answer {
+  padding: 12px;
+  border-left: 2px solid var(--state-success);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: color-mix(in srgb, var(--state-success) 6%, transparent);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--label-primary);
+  white-space: pre-wrap;
+}
+
+.confirm-box {
+  border-color: color-mix(in srgb, var(--state-warn) 45%, transparent);
+  background: color-mix(in srgb, var(--state-warn) 8%, transparent);
+}
+
+.confirm-box .actions {
+  margin-top: 10px;
+}
+
 @media (max-width: 1080px) {
   .split-layout {
     grid-template-columns: minmax(0, 1fr);

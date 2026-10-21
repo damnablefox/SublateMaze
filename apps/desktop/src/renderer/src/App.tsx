@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Sidebar, type SidebarView } from './components/Sidebar'
+import { AgentPage } from './pages/AgentPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { KnowledgePage } from './pages/KnowledgePage'
 import { LibraryPage } from './pages/LibraryPage'
@@ -23,6 +24,7 @@ type View =
   | { name: 'knowledge' }
   | { name: 'courses' }
   | { name: 'overview' }
+  | { name: 'agent' }
   | { name: 'reader'; id: string; page?: number }
   | { name: 'trash' }
 
@@ -69,6 +71,8 @@ export function App() {
           <CoursesPage />
         ) : view.name === 'overview' ? (
           <OverviewPage />
+        ) : view.name === 'agent' ? (
+          <AgentPage />
         ) : view.name === 'reviews' ? (
           <ReviewPage
             onOpenCarrier={(id, page) => setView({ name: 'reader', id, page })}

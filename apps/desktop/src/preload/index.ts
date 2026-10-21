@@ -85,4 +85,13 @@ contextBridge.exposeInMainWorld('sublate', {
     overview: () => ipcRenderer.invoke('review:overview', {}),
     history: (pointId: string) => ipcRenderer.invoke('review:history', { pointId }),
   },
+  agent: {
+    start: (goal: string, budgetTokens?: number) =>
+      ipcRenderer.invoke('agent:start', { goal, budgetTokens }),
+    step: (sessionId: string, approved?: boolean) =>
+      ipcRenderer.invoke('agent:step', { sessionId, approved }),
+    cancel: (sessionId: string) => ipcRenderer.invoke('agent:cancel', { sessionId }),
+    sessions: () => ipcRenderer.invoke('agent:sessions', {}),
+    session: (id: string) => ipcRenderer.invoke('agent:session', { id }),
+  },
 })

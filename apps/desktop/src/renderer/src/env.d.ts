@@ -309,6 +309,55 @@ export interface ReviewOverview {
   distribution: MasteryBucket[]
 }
 
+export interface AgentEvent {
+  seq: number
+  type: string
+  payload: unknown
+  createdAt: string
+}
+
+export interface AgentPending {
+  tool: string
+  args: unknown
+  permission: 'read' | 'write-draft' | 'write-commit' | 'dangerous'
+}
+
+export interface AgentStep {
+  sessionId: string
+  status: 'running' | 'confirm' | 'done' | 'error'
+  events: AgentEvent[]
+  pending?: AgentPending
+  answer?: string
+  error?: string
+  usedTokens: number
+  budgetTokens: number
+}
+
+export interface SessionSummary {
+  id: string
+  goal: string
+  title: string
+  status: 'running' | 'done' | 'failed' | 'cancelled'
+  budgetTokens: number
+  usedTokens: number
+  createdAt: string
+  updatedAt: string
+  eventCount: number
+}
+
+export interface SessionDetail {
+  id: string
+  goal: string
+  title: string
+  status: 'running' | 'done' | 'failed' | 'cancelled'
+  budgetTokens: number
+  usedTokens: number
+  answer?: string
+  createdAt: string
+  updatedAt: string
+  events: AgentEvent[]
+}
+
 declare global {
   interface Window {
     sublate: {
@@ -383,6 +432,13 @@ declare global {
         stats(): Promise<ReviewStats>
         overview(): Promise<ReviewOverview>
         history(pointId: string): Promise<unknown[]>
+      }
+      agent: {
+        start(goal: string, budgetTokens?: number): Promise<AgentStep>
+        step(sessionId: string, approved?: boolean): Promise<AgentStep>
+        cancel(sessionId: string): Promise<void>
+        sessions(): Promise<SessionSummary[]>
+        session(id: string): Promise<SessionDetail>
       }
     }
   }
