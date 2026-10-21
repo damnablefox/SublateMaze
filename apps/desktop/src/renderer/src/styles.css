@@ -1280,8 +1280,102 @@
   }
 }
 
+/* ---------- 进度 ---------- */
+
+.progress-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: var(--radius-md);
+  transition: background var(--dur) var(--ease);
+}
+
+.progress-row:hover {
+  background: var(--interactive-hover);
+}
+
+.progress-track {
+  height: 6px;
+  margin: 4px 0;
+  border-radius: 999px;
+  background: var(--bg-skeleton);
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--label-primary);
+  transition: width var(--dur) var(--ease);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border: 0.5px solid var(--border-l3);
+  border-radius: var(--radius-md);
+}
+
+.metric-value {
+  font-family: var(--font-code);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--label-primary);
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--label-tertiary);
+}
+
+.distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.distribution-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 10px;
+}
+
+.distribution-label,
+.distribution-count {
+  font-family: var(--font-code);
+  font-size: 11px;
+  color: var(--label-tertiary);
+}
+
+.distribution-count {
+  text-align: right;
+  color: var(--label-secondary);
+}
+
+.overview-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
 @media (max-width: 1080px) {
   .split-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .overview-columns {
     grid-template-columns: minmax(0, 1fr);
   }
 

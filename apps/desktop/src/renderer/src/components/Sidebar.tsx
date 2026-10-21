@@ -4,6 +4,7 @@ import {
   KnowledgeIcon,
   LibraryIcon,
   MoonIcon,
+  OverviewIcon,
   ReviewIcon,
   SunIcon,
   SystemIcon,
@@ -11,7 +12,14 @@ import {
   TrashIcon,
 } from './icons'
 
-export type SidebarView = 'today' | 'reviews' | 'library' | 'knowledge' | 'courses' | 'trash'
+export type SidebarView =
+  | 'today'
+  | 'reviews'
+  | 'library'
+  | 'knowledge'
+  | 'courses'
+  | 'overview'
+  | 'trash'
 
 interface SidebarProps {
   active: SidebarView | 'reader'
@@ -32,6 +40,7 @@ const NAV_ITEMS: { view: SidebarView; label: string; Icon: typeof SunIcon }[] = 
   { view: 'library', label: '知识库', Icon: LibraryIcon },
   { view: 'knowledge', label: '知识点', Icon: KnowledgeIcon },
   { view: 'courses', label: '课程', Icon: CourseIcon },
+  { view: 'overview', label: '进度', Icon: OverviewIcon },
   { view: 'trash', label: '回收站', Icon: TrashIcon },
 ]
 

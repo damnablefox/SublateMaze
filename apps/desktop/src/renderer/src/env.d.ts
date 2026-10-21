@@ -276,6 +276,39 @@ export interface ReviewResult {
   accuracy: number
 }
 
+export interface BudgetResult {
+  totalMinutes: number
+  reserveMinutes: number
+  availableMinutes: number
+  reviewSlots: number
+  newSlots: number
+  reviewMinutes: number
+  newMinutes: number
+  message: string
+}
+
+export interface ScopeProgress {
+  id: string
+  title: string
+  total: number
+  learned: number
+  mastery: number
+}
+
+export interface MasteryBucket {
+  label: string
+  count: number
+}
+
+export interface ReviewOverview {
+  stats: ReviewStats
+  dailyMinutes: number
+  budget: BudgetResult
+  byCarrier: ScopeProgress[]
+  byCourse: ScopeProgress[]
+  distribution: MasteryBucket[]
+}
+
 declare global {
   interface Window {
     sublate: {
@@ -348,6 +381,7 @@ declare global {
         queue(limit?: number): Promise<ReviewQueue>
         submit(pointId: string, rating: 1 | 2 | 3 | 4): Promise<ReviewResult>
         stats(): Promise<ReviewStats>
+        overview(): Promise<ReviewOverview>
         history(pointId: string): Promise<unknown[]>
       }
     }

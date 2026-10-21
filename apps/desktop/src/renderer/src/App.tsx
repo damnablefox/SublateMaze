@@ -3,6 +3,7 @@ import { Sidebar, type SidebarView } from './components/Sidebar'
 import { CoursesPage } from './pages/CoursesPage'
 import { KnowledgePage } from './pages/KnowledgePage'
 import { LibraryPage } from './pages/LibraryPage'
+import { OverviewPage } from './pages/OverviewPage'
 import { ReaderPage } from './pages/ReaderPage'
 import { ReviewPage } from './pages/ReviewPage'
 import { TodayPage } from './pages/TodayPage'
@@ -21,6 +22,7 @@ type View =
   | { name: 'library' }
   | { name: 'knowledge' }
   | { name: 'courses' }
+  | { name: 'overview' }
   | { name: 'reader'; id: string; page?: number }
   | { name: 'trash' }
 
@@ -65,6 +67,8 @@ export function App() {
           <KnowledgePage />
         ) : view.name === 'courses' ? (
           <CoursesPage />
+        ) : view.name === 'overview' ? (
+          <OverviewPage />
         ) : view.name === 'reviews' ? (
           <ReviewPage
             onOpenCarrier={(id, page) => setView({ name: 'reader', id, page })}

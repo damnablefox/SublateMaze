@@ -82,6 +82,7 @@ contextBridge.exposeInMainWorld('sublate', {
     submit: (pointId: string, rating: 1 | 2 | 3 | 4) =>
       ipcRenderer.invoke('review:submit', { pointId, rating }),
     stats: () => ipcRenderer.invoke('review:stats', {}),
+    overview: () => ipcRenderer.invoke('review:overview', {}),
     history: (pointId: string) => ipcRenderer.invoke('review:history', { pointId }),
   },
 })

@@ -78,6 +78,15 @@ export function ReviewIcon({ size = 16 }: IconProps) {
   )
 }
 
+export function OverviewIcon({ size = 16 }: IconProps) {
+  return (
+    <svg {...base(size)}>
+      <path d="M2.5 13.5h11" />
+      <path d="M4.75 13V9M8 13V5M11.25 13V7.5" />
+    </svg>
+  )
+}
+
 export function PlusIcon({ size = 16 }: IconProps) {
   return (
     <svg {...base(size)}>
