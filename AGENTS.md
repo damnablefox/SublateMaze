@@ -57,15 +57,19 @@ cargo test
 - 测试必须断言可观察行为，不依赖内部实现细节。
 - 不提交被跳过的测试（`.skip`）或空断言。
 
-## 提交规范
+## 提交与注释语言
 
-使用 Conventional Commits：
+- **提交信息、代码注释、日志、测试描述、文档正文一律使用中文**；
+- 变量名、函数名、类型名、包名、命令、API 名称保持英文；
+- Conventional Commits 的类型前缀保留英文（`feat` / `fix` / `docs` / `chore` 等），类型后的描述使用中文。
+
+示例：
 
 ```
-feat(kernel): load profiles with patch layers
-fix(core): reject empty entity ids
-docs(adr): record Cordis decision
-chore: initialize workspace
+feat(内核): 支持 profile 分层加载
+fix(核心): 拒绝空实体 id
+docs(记录): 记录 Cordis 选型
+chore: 初始化工作区
 ```
 
 一次提交只做一件事。不要提交 `node_modules`、`dist`、`target`、`*.db`、`.env`、原生 `.node` 文件。

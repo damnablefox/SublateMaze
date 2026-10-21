@@ -16,5 +16,5 @@ export function apply(ctx: Context) {
   }
 
   ctx.provide('demo', service)
-  ctx.logger('demo').info('demo plugin loaded')
+  ctx.logger('demo').info('demo 插件已加载')
 }

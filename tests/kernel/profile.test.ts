@@ -5,8 +5,8 @@ import { createKernel } from '@sublate/kernel'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 
-describe('kernel profile loading', () => {
-  it('loads the default profile and registers the demo service', async () => {
+describe('kernel profile 加载', () => {
+  it('加载默认 profile 并注册 demo 服务', async () => {
     const { ctx, plugins } = await createKernel(resolve(root, 'profiles/default/cordis.yml'))
 
     expect(plugins).toEqual([
@@ -17,7 +17,7 @@ describe('kernel profile loading', () => {
     expect(demo?.ping('test')).toBe('pong: test')
   })
 
-  it('marks a missing plugin as failed without throwing', async () => {
+  it('缺失插件被标记为 failed 且不抛错', async () => {
     const { plugins } = await createKernel(
       resolve(root, 'tests/fixtures/broken-profile.yml'),
     )
