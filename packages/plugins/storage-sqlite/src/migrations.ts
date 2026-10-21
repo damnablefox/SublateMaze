@@ -235,3 +235,38 @@ CREATE TABLE IF NOT EXISTS plan_items (
 CREATE INDEX IF NOT EXISTS idx_plan_items_plan ON plan_items (plan_id, date, position);
 CREATE INDEX IF NOT EXISTS idx_plan_items_date ON plan_items (date, status);
 `
+
+/** 迁移 007：FSRS 掌握状态与复习记录。 */
+export const MIGRATION_007 = `
+CREATE TABLE IF NOT EXISTS mastery (
+  point_id TEXT PRIMARY KEY REFERENCES knowledge_points (id) ON DELETE CASCADE,
+  stability REAL NOT NULL DEFAULT 0,
+  difficulty REAL NOT NULL DEFAULT 0,
+  due_at TEXT,
+  reps INTEGER NOT NULL DEFAULT 0,
+  lapses INTEGER NOT NULL DEFAULT 0,
+  card_state INTEGER NOT NULL DEFAULT 0,
+  scheduled_days INTEGER NOT NULL DEFAULT 0,
+  learning_steps INTEGER NOT NULL DEFAULT 0,
+  last_reviewed_at TEXT,
+  last_rating INTEGER,
+  accuracy_ewma REAL NOT NULL DEFAULT 0.5,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_mastery_due ON mastery (due_at);
+
+CREATE TABLE IF NOT EXISTS reviews (
+  id TEXT PRIMARY KEY,
+  point_id TEXT NOT NULL REFERENCES knowledge_points (id) ON DELETE CASCADE,
+  rating INTEGER NOT NULL,
+  reviewed_at TEXT NOT NULL,
+  retrievability_before REAL NOT NULL DEFAULT 0,
+  interval_days REAL NOT NULL DEFAULT 0,
+  stability_after REAL NOT NULL DEFAULT 0,
+  difficulty_after REAL NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_reviews_point ON reviews (point_id, reviewed_at);
+CREATE INDEX IF NOT EXISTS idx_reviews_time ON reviews (reviewed_at);
+`

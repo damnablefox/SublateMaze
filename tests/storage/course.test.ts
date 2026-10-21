@@ -61,10 +61,10 @@ afterEach(() => {
 })
 
 describe('storage-sqlite 课程仓储', () => {
-  it('迁移到版本 6 并创建课程与单元', () => {
+  it('迁移到版本 7 并创建课程与单元', () => {
     const { sqlite } = setup()
 
-    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(6)
+    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(7)
 
     const course = sqlite.course.create({ title: '线性代数', description: '入门', dailyMinutes: 45 })
     const unit = sqlite.course.createUnit({ courseId: course.id, title: '第一章' })

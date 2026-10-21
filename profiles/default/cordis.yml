@@ -40,6 +40,8 @@
       name: '@sublate/plugin-course'
     - id: planner
       name: '@sublate/plugin-planner'
+    - id: scheduler
+      name: '@sublate/plugin-scheduler'
     - id: study-tools
       name: '@sublate/plugin-study-tools'
     - id: ui-shell

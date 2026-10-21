@@ -40,7 +40,7 @@ afterEach(() => {
 })
 
 describe('storage-sqlite 知识仓储', () => {
-  it('迁移到版本 6 并写入草稿单元与知识点', () => {
+  it('迁移到版本 7 并写入草稿单元与知识点', () => {
     const { sqlite, carrier } = setup()
 
     sqlite.knowledge.replaceDraft(carrier.id, {
@@ -59,7 +59,7 @@ describe('storage-sqlite 知识仓储', () => {
 
     expect(
       (sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version,
-    ).toBe(6)
+    ).toBe(7)
     expect(sqlite.knowledge.listUnits(carrier.id)).toHaveLength(1)
     expect(sqlite.knowledge.listPoints(carrier.id)).toHaveLength(2)
     expect(sqlite.knowledge.pointStats(carrier.id)).toEqual({

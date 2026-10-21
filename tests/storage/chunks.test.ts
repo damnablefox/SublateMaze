@@ -40,7 +40,7 @@ afterEach(() => {
 })
 
 describe('storage-sqlite chunk 仓储', () => {
-  it('迁移到版本 6 并写入待索引 chunk', () => {
+  it('迁移到版本 7 并写入待索引 chunk', () => {
     const { sqlite, carrier } = setup()
 
     const chunks = sqlite.chunks.replaceChunks(carrier.id, [
@@ -50,7 +50,7 @@ describe('storage-sqlite chunk 仓储', () => {
 
     expect(
       (sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version,
-    ).toBe(6)
+    ).toBe(7)
     expect(chunks).toHaveLength(2)
     expect(sqlite.chunks.listChunks(carrier.id).map(chunk => chunk.status)).toEqual([
       'pending',
