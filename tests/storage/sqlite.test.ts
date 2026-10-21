@@ -24,7 +24,10 @@ describe('storage-sqlite', () => {
 
     service.setSetting('theme', { mode: 'dark' })
     expect(service.getSetting('theme')).toEqual({ mode: 'dark' })
-    expect(service.db.pragma('user_version', { simple: true })).toBe(1)
+    expect(
+      (service.db.prepare('PRAGMA user_version').get() as { user_version: number })
+        .user_version,
+    ).toBe(1)
 
     service.close()
   })

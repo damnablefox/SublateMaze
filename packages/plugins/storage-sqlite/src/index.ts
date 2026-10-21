@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3'
+import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
@@ -15,28 +15,36 @@ export interface StorageConfig {
 /**
  * SQLite 关系存储服务。
  *
- * 约定：只有本插件持有连接；其他插件通过 `ctx.db` 调用领域方法，
- * 不直接执行 SQL，也不在别处打开同一个数据库文件。
+ * 使用 Node / Electron 内置的 `node:sqlite`，避免原生模块编译与 ABI 问题。
+ * 约定：只有本插件持有连接；其他插件通过 `ctx.db` 调用领域方法。
  */
 export class SqliteService {
-  readonly db: Database.Database
+  readonly db: DatabaseSync
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
-    this.db = new Database(dbPath)
-    this.db.pragma('journal_mode = WAL')
-    this.db.pragma('foreign_keys = ON')
+    this.db = new DatabaseSync(dbPath)
+    this.db.exec('PRAGMA journal_mode = WAL')
+    this.db.exec('PRAGMA foreign_keys = ON')
     this.migrate()
   }
 
   private migrate(): void {
-    const version = this.db.pragma('user_version', { simple: true }) as number
+    const row = this.db.prepare('PRAGMA user_version').get() as
+      | { user_version: number }
+      | undefined
+    const version = row?.user_version ?? 0
 
     if (version < 1) {
-      this.db.transaction(() => {
+      this.db.exec('BEGIN')
+      try {
         this.db.exec(MIGRATION_001)
-        this.db.pragma('user_version = 1')
-      })()
+        this.db.exec('PRAGMA user_version = 1')
+        this.db.exec('COMMIT')
+      } catch (error) {
+        this.db.exec('ROLLBACK')
+        throw error
+      }
     }
   }
 

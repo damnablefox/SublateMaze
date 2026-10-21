@@ -9,7 +9,7 @@
 | `@deepseek-ai/cordis` 4.0.5 | MIT | 插件内核 | 否，随依赖分发 |
 | `apache-arrow` 18.1.0 | Apache-2.0 | LanceDB 向量 schema | 否 |
 | `@lancedb/lancedb` 0.40.0 | Apache-2.0 | 向量索引 | 否 |
-| `better-sqlite3` 13.x | MIT | SQLite 驱动 | 否 |
+| `node:sqlite` | Node 内置 | SQLite 驱动 | 否（随 Node/Electron 分发） |
 | `zod` 4.x | MIT | 参数与契约校验 | 否 |
 | `yaml` 2.x | ISC | profile 解析 | 否 |
 | `electron` 45.x | MIT | 桌面宿主 | 否 |
