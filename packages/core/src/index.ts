@@ -8,6 +8,7 @@
 export const CORE_VERSION = '0.1.0'
 
 export * from './library.ts'
+export * from './plan.ts'
 export * from './text.ts'
 
 /** 领域实体 id 统一使用字符串，便于跨进程与持久化。 */
