@@ -10,7 +10,7 @@ importers:
     devDependencies:
       '@napi-rs/cli':
         specifier: ^3.10.8
-        version: 3.10.8(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@24.19.2)
+        version: 3.10.8(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.19.2)
       '@sublate/core':
         specifier: workspace:*
         version: link:packages/core
@@ -77,6 +77,9 @@ importers:
       '@sublate/plugin-demo':
         specifier: workspace:*
         version: link:../../packages/plugins/demo
+      '@sublate/plugin-ipc-bridge':
+        specifier: workspace:*
+        version: link:../../packages/plugins/ipc-bridge
       '@sublate/plugin-native-bridge':
         specifier: workspace:*
         version: link:../../packages/plugins/native-bridge
@@ -95,6 +98,9 @@ importers:
       '@sublate/plugin-tools':
         specifier: workspace:*
         version: link:../../packages/plugins/tools
+      '@sublate/plugin-ui-shell':
+        specifier: workspace:*
+        version: link:../../packages/plugins/ui-shell
       '@sublate/plugin-vault':
         specifier: workspace:*
         version: link:../../packages/plugins/vault
@@ -183,6 +189,19 @@ importers:
         specifier: ^4.0.0
         version: 4.6.7
 
+  packages/plugins/ipc-bridge:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: 4.0.5
+        version: 4.0.5(@deepseek-ai/cordis-plugin-include@1.0.10)(@deepseek-ai/cordis-plugin-loader@1.0.6)
+      '@sublate/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../plugin-sdk
+    devDependencies:
+      electron:
+        specifier: 45.0.0
+        version: 45.0.0
+
   packages/plugins/native-bridge:
     dependencies:
       '@deepseek-ai/cordis':
@@ -243,6 +262,19 @@ importers:
       '@sublate/plugin-sdk':
         specifier: workspace:*
         version: link:../../plugin-sdk
+
+  packages/plugins/ui-shell:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: 4.0.5
+        version: 4.0.5(@deepseek-ai/cordis-plugin-include@1.0.10)(@deepseek-ai/cordis-plugin-loader@1.0.6)
+      '@sublate/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../plugin-sdk
+    devDependencies:
+      electron:
+        specifier: 45.0.0
+        version: 45.0.0
 
   packages/plugins/vault:
     dependencies:
@@ -3092,7 +3124,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@napi-rs/cli@3.10.8(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@24.19.2)':
+  '@napi-rs/cli@3.10.8(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@24.19.2)':
     dependencies:
       '@inquirer/prompts': 8.7.4(@types/node@24.19.2)
       '@napi-rs/cross-toolchain': 1.0.3
@@ -3107,8 +3139,8 @@ snapshots:
       typanion: 3.14.0
       typescript: 6.0.3
     optionalDependencies:
-      '@emnapi/core': 1.11.2
-      '@emnapi/runtime': 1.11.2
+      '@emnapi/core': 1.9.2
+      '@emnapi/runtime': 1.9.2
     transitivePeerDependencies:
       - '@napi-rs/cross-toolchain-arm64-target-aarch64'
       - '@napi-rs/cross-toolchain-arm64-target-armv7'
