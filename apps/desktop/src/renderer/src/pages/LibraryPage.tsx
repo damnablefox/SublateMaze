@@ -22,6 +22,7 @@ function summarizeImport(results: ImportResult[]): string {
 
 export function LibraryPage({ onOpen, onOpenTrash }: LibraryPageProps) {
   const [carriers, setCarriers] = useState<Carrier[]>([])
+  const [available, setAvailable] = useState(true)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string>()
@@ -35,9 +36,13 @@ export function LibraryPage({ onOpen, onOpenTrash }: LibraryPageProps) {
   const refresh = useCallback(async () => {
     try {
       setCarriers(await window.sublate.library.list())
+      setAvailable(true)
       setError(undefined)
     } catch (reason) {
-      setError(`读取知识库失败：${errorText(reason)}`)
+      const message = errorText(reason)
+      // 插件被停用后频道不再注册，此时隐藏导入与检索入口。
+      if (message.includes('No handler registered')) setAvailable(false)
+      setError(`读取知识库失败：${message}`)
     } finally {
       setLoading(false)
     }
@@ -125,46 +130,61 @@ export function LibraryPage({ onOpen, onOpenTrash }: LibraryPageProps) {
           <p className="subtitle">本地优先的个人学习平台与知识库</p>
         </div>
         <div className="actions">
-          <button className="button ghost" type="button" onClick={onOpenTrash}>
-            回收站
-          </button>
-          <button className="button primary" type="button" onClick={importFiles} disabled={busy}>
-            {busy ? '处理中…' : '导入 PDF'}
-          </button>
+          {available ? (
+            <>
+              <button className="button ghost" type="button" onClick={onOpenTrash}>
+                回收站
+              </button>
+              <button
+                className="button primary"
+                type="button"
+                onClick={importFiles}
+                disabled={busy}
+              >
+                {busy ? '处理中…' : '导入 PDF'}
+              </button>
+            </>
+          ) : null}
         </div>
       </header>
 
-      <section className="panel">
-        <form className="row" onSubmit={importUrl}>
-          <input
-            className="input grow"
-            type="url"
-            placeholder="粘贴网页链接导入正文"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            disabled={busy}
-          />
-          <button className="button" type="submit" disabled={busy || url.trim().length === 0}>
-            导入网页
-          </button>
-        </form>
+      {available ? (
+        <section className="panel">
+          <form className="row" onSubmit={importUrl}>
+            <input
+              className="input grow"
+              type="url"
+              placeholder="粘贴网页链接导入正文"
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              disabled={busy}
+            />
+            <button className="button" type="submit" disabled={busy || url.trim().length === 0}>
+              导入网页
+            </button>
+          </form>
 
-        <form className="row" onSubmit={search}>
-          <input
-            className="input grow"
-            type="search"
-            placeholder="全文检索（支持中文短语，例如「知识点」）"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          <button className="button" type="submit" disabled={searching}>
-            {searching ? '检索中…' : '检索'}
-          </button>
-        </form>
+          <form className="row" onSubmit={search}>
+            <input
+              className="input grow"
+              type="search"
+              placeholder="全文检索（支持中文短语，例如「知识点」）"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+            <button className="button" type="submit" disabled={searching}>
+              {searching ? '检索中…' : '检索'}
+            </button>
+          </form>
 
-        {message ? <p className="notice">{message}</p> : null}
-        {error ? <p className="error">{error}</p> : null}
-      </section>
+          {message ? <p className="notice">{message}</p> : null}
+          {error ? <p className="error">{error}</p> : null}
+        </section>
+      ) : (
+        <section className="panel">
+          <p className="muted">知识库插件未启用，导入与检索入口已隐藏。</p>
+        </section>
+      )}
 
       {hits ? (
         <section>
