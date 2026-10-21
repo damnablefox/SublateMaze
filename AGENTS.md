@@ -1,0 +1,79 @@
+# AGENTS.md
+
+面向 AI 编码助手的工程约定。任何实现前先读本文件、`README.md` 与相关的 `docs/specs`、`docs/adr`。
+
+## 项目定位
+
+SublateMaze 是本地优先的个人学习平台与知识库。当前处于 **M0 工程骨架**，只做基础设施与最小插件树，不实现业务功能。
+
+完整方案见工作区 `../分析文档/SublateMaze-项目工程方案.md`（不在本仓库内）。
+
+## 目录与职责
+
+| 路径 | 职责 |
+|---|---|
+| `packages/core` | 平台无关领域逻辑（实体、用例、FSRS、计划算法、Agent 工具定义） |
+| `packages/kernel` | profile 解析、插件装载、故障隔离 |
+| `packages/plugin-sdk` | 插件类型、manifest、权限常量 |
+| `packages/shared` | 领域 DTO 与跨进程契约（zod） |
+| `packages/plugins/*` | 官方插件，每个是独立 workspace 包 |
+| `apps/desktop` | Windows Electron 壳（M0 后续接入） |
+| `profiles/` | Cordis 插件组合（`cordis.yml`，`- insert:` 行） |
+| `crates/` | Rust workspace |
+| `docs/adr` | 架构决策记录 |
+| `docs/specs` | 功能规格与验收标准 |
+| `tests/` | kernel、插件契约、后续 e2e |
+
+## 常用命令
+
+```powershell
+pnpm install
+pnpm dev:kernel     # 加载默认 profile，打印插件树
+pnpm typecheck
+pnpm test
+cargo test
+```
+
+## 硬性边界
+
+1. `packages/core` 不得 import `electron`、`node:fs`、`node:path`、`node:child_process`；文件与数据库能力通过接口注入。
+2. `packages/plugins/*` 之间不得互相 import；只能通过 `ctx` 服务与事件协作。
+3. SQLite 只允许 `storage-sqlite` 插件写入；LanceDB 只允许 `storage-lancedb` 插件写入。
+4. Agent 工具必须声明权限级别（read / write-draft / write-commit / dangerous），写操作必须经用户确认并写审计事件。
+5. 渲染进程不得直接访问 Node；所有能力经 `preload` 白名单与 IPC 契约。
+6. `packages/shared` 的契约变更必须同步更新调用方与测试。
+
+## 实现流程
+
+1. 在 `docs/specs/` 写规格：目标、非目标、接口、数据变更、验收标准、测试点；
+2. 一次只改一个包或一个用例；
+3. 先接口、再实现、再测试、最后接线；
+4. 运行 `pnpm typecheck` 与 `pnpm test`，涉及 Rust 时运行 `cargo test`；
+5. 提交前确认没有新增未登记来源的第三方代码。
+
+## 测试要求
+
+- 新增逻辑必须有单元测试；跨插件行为用 `tests/` 下的契约测试。
+- 测试必须断言可观察行为，不依赖内部实现细节。
+- 不提交被跳过的测试（`.skip`）或空断言。
+
+## 提交规范
+
+使用 Conventional Commits：
+
+```
+feat(kernel): load profiles with patch layers
+fix(core): reject empty entity ids
+docs(adr): record Cordis decision
+chore: initialize workspace
+```
+
+一次提交只做一件事。不要提交 `node_modules`、`dist`、`target`、`*.db`、`.env`、原生 `.node` 文件。
+
+## 禁止事项
+
+- 不修改 `Cargo.lock` / `pnpm-lock.yaml` 之外的依赖版本来源；升级依赖需单独提交并说明理由。
+- 不删除或重写已有数据库迁移；迁移只增不改。
+- 不把密钥、API Key、个人路径写入代码或测试夹具。
+- 不引入 GPL/AGPL 代码；第三方代码按方案 2.5 登记到 `docs/third-party-notices.md`。
+- 不在未写规格的情况下实现跨包的大型功能。

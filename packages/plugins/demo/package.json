@@ -1,0 +1,16 @@
+{
+  "name": "@sublate/plugin-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "最小示例插件：验证插件树与生命周期",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@sublate/plugin-sdk": "workspace:*"
+  }
+}

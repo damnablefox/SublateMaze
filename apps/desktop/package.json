@@ -1,0 +1,7 @@
+{
+  "name": "@sublate/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Windows Electron 壳（M0 后续接入）"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@sublate/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "领域 DTO 与跨进程 IPC 契约",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  }
+}

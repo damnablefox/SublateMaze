@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@sublate/core": ["packages/core/src/index.ts"],
+      "@sublate/kernel": ["packages/kernel/src/index.ts"],
+      "@sublate/plugin-sdk": ["packages/plugin-sdk/src/index.ts"],
+      "@sublate/shared": ["packages/shared/src/index.ts"]
+    }
+  },
+  "include": [
+    "apps/**/*.ts",
+    "packages/**/*.ts",
+    "scripts/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist", "target"]
+}

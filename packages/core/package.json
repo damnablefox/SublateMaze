@@ -1,0 +1,12 @@
+{
+  "name": "@sublate/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "平台无关领域逻辑：实体、用例、FSRS、计划算法、Agent 工具定义",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
