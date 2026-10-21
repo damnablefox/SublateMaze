@@ -29,6 +29,9 @@ importers:
       '@sublate/plugin-demo':
         specifier: workspace:*
         version: link:packages/plugins/demo
+      '@sublate/plugin-extractor':
+        specifier: workspace:*
+        version: link:packages/plugins/extractor
       '@sublate/plugin-importer':
         specifier: workspace:*
         version: link:packages/plugins/importer
@@ -101,6 +104,9 @@ importers:
       '@sublate/plugin-demo':
         specifier: workspace:*
         version: link:../../packages/plugins/demo
+      '@sublate/plugin-extractor':
+        specifier: workspace:*
+        version: link:../../packages/plugins/extractor
       '@sublate/plugin-importer':
         specifier: workspace:*
         version: link:../../packages/plugins/importer
@@ -226,6 +232,18 @@ importers:
         version: link:../../plugin-sdk
 
   packages/plugins/demo:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: 4.0.5
+        version: 4.0.5(@deepseek-ai/cordis-plugin-include@1.0.10)(@deepseek-ai/cordis-plugin-loader@1.0.6)
+      '@sublate/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../plugin-sdk
+      zod:
+        specifier: ^4.0.0
+        version: 4.6.7
+
+  packages/plugins/extractor:
     dependencies:
       '@deepseek-ai/cordis':
         specifier: 4.0.5

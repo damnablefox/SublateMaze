@@ -3,13 +3,23 @@ import { mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import { AiCallStore } from './ai-calls.ts'
+import { AiJobStore } from './ai-jobs.ts'
 import { CarrierStore } from './carriers.ts'
 import { ChunkStore } from './chunks.ts'
-import { MIGRATION_001, MIGRATION_002, MIGRATION_003, MIGRATION_004 } from './migrations.ts'
+import { KnowledgeStore } from './knowledge.ts'
+import {
+  MIGRATION_001,
+  MIGRATION_002,
+  MIGRATION_003,
+  MIGRATION_004,
+  MIGRATION_005,
+} from './migrations.ts'
 
 export * from './ai-calls.ts'
+export * from './ai-jobs.ts'
 export * from './carriers.ts'
 export * from './chunks.ts'
+export * from './knowledge.ts'
 
 export const name = 'storage-sqlite'
 export const inject: string[] = []
@@ -30,6 +40,8 @@ export class SqliteService {
   readonly carriers: CarrierStore
   readonly chunks: ChunkStore
   readonly aiCalls: AiCallStore
+  readonly aiJobs: AiJobStore
+  readonly knowledge: KnowledgeStore
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
@@ -39,6 +51,8 @@ export class SqliteService {
     this.carriers = new CarrierStore(this.db)
     this.chunks = new ChunkStore(this.db)
     this.aiCalls = new AiCallStore(this.db)
+    this.aiJobs = new AiJobStore(this.db)
+    this.knowledge = new KnowledgeStore(this.db)
     this.migrate()
   }
 
@@ -52,6 +66,7 @@ export class SqliteService {
     if (version < 2) this.runMigration(MIGRATION_002, 2)
     if (version < 3) this.runMigration(MIGRATION_003, 3)
     if (version < 4) this.runMigration(MIGRATION_004, 4)
+    if (version < 5) this.runMigration(MIGRATION_005, 5)
   }
 
   private runMigration(sql: string, targetVersion: number): void {

@@ -104,3 +104,51 @@ CREATE TABLE IF NOT EXISTS carrier_chunks (
 CREATE INDEX IF NOT EXISTS idx_carrier_chunks_carrier ON carrier_chunks (carrier_id);
 CREATE INDEX IF NOT EXISTS idx_carrier_chunks_status ON carrier_chunks (embedding_status);
 `
+
+/** 迁移 005：AI 任务、知识单元与知识点。 */
+export const MIGRATION_005 = `
+CREATE TABLE IF NOT EXISTS ai_jobs (
+  id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL,
+  ref_id TEXT,
+  status TEXT NOT NULL,
+  progress REAL NOT NULL DEFAULT 0,
+  result_json TEXT,
+  error TEXT,
+  prompt_tokens INTEGER NOT NULL DEFAULT 0,
+  completion_tokens INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS knowledge_units (
+  id TEXT PRIMARY KEY,
+  carrier_id TEXT NOT NULL REFERENCES carriers (id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  page_start INTEGER,
+  page_end INTEGER,
+  status TEXT NOT NULL DEFAULT 'draft',
+  source TEXT NOT NULL DEFAULT 'ai',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS knowledge_points (
+  id TEXT PRIMARY KEY,
+  unit_id TEXT REFERENCES knowledge_units (id) ON DELETE SET NULL,
+  carrier_id TEXT NOT NULL REFERENCES carriers (id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  page_start INTEGER NOT NULL,
+  page_end INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  source TEXT NOT NULL DEFAULT 'ai',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_units_carrier ON knowledge_units (carrier_id);
+CREATE INDEX IF NOT EXISTS idx_knowledge_points_carrier ON knowledge_points (carrier_id);
+CREATE INDEX IF NOT EXISTS idx_knowledge_points_unit ON knowledge_points (unit_id);
+CREATE INDEX IF NOT EXISTS idx_knowledge_points_status ON knowledge_points (status);
+`

@@ -18,6 +18,7 @@
     "@sublate/plugin-agent": "workspace:*",
     "@sublate/plugin-ai-provider": "workspace:*",
     "@sublate/plugin-demo": "workspace:*",
+    "@sublate/plugin-extractor": "workspace:*",
     "@sublate/plugin-importer": "workspace:*",
     "@sublate/plugin-indexer": "workspace:*",
     "@sublate/plugin-ipc-bridge": "workspace:*",

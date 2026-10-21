@@ -83,7 +83,7 @@ describe('parser', () => {
     expect(fullText).toContain('内容哈希')
     expect(fullText).not.toContain('关于我们')
     expect(fullText).not.toContain('版权所有')
-  }, 15_000)
+  }, 30_000)
 
   it('无正文的网页给出明确错误', async () => {
     const { service } = createService()

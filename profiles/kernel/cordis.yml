@@ -23,5 +23,7 @@
       name: '@sublate/plugin-importer'
     - id: indexer
       name: '@sublate/plugin-indexer'
+    - id: extractor
+      name: '@sublate/plugin-extractor'
     - id: search
       name: '@sublate/plugin-search'

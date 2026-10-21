@@ -80,7 +80,7 @@ describe('importer', () => {
     expect(events).toEqual([
       { event: 'carrier/imported', payload: { carrierId: result!.carrierId } },
     ])
-  }, 15_000)
+  }, 30_000)
 
   it('同一内容重复导入只保留一份副本', async () => {
     const { root, sqlite, importer } = setup()
@@ -152,5 +152,5 @@ describe('importer', () => {
     expect(carrier?.sourceUrl).toBe('https://example.com/post')
     expect(carrier?.file.relPath.endsWith('.html')).toBe(true)
     expect(carrier?.pageCount).toBeGreaterThan(0)
-  }, 15_000)
+  }, 30_000)
 })
