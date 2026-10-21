@@ -70,6 +70,35 @@ interface MasteryRow {
   updated_at: string
 }
 
+export interface ScopeMasteryRow {
+  scopeId: string
+  scopeTitle: string
+  pointId: string
+  mastery?: MasteryState
+}
+
+interface MasteryFields {
+  mastery_point_id: string | null
+  stability: number | null
+  difficulty: number | null
+  due_at: string | null
+  reps: number | null
+  lapses: number | null
+  card_state: number | null
+  scheduled_days: number | null
+  learning_steps: number | null
+  last_reviewed_at: string | null
+  last_rating: number | null
+  accuracy_ewma: number | null
+  updated_at: string | null
+}
+
+interface ScopeRow extends MasteryFields {
+  scope_id: string
+  scope_title: string
+  point_id: string
+}
+
 interface ReviewRow {
   id: string
   point_id: string
@@ -135,27 +164,37 @@ function mapReview(row: ReviewRow): ReviewRecord {
   }
 }
 
-function mapCard(row: CardRow): ReviewCard {
-  let mastery: MasteryState | undefined
+/** 从查询结果还原掌握状态；没有复习记录时返回 undefined。 */
+function toMastery(row: MasteryFields): MasteryState | undefined {
+  if (!row.mastery_point_id || !row.updated_at) return undefined
 
-  if (row.mastery_point_id && row.updated_at) {
-    mastery = {
-      pointId: row.mastery_point_id,
-      stability: row.stability ?? 0,
-      difficulty: row.difficulty ?? 0,
-      dueAt: row.due_at ?? undefined,
-      reps: row.reps ?? 0,
-      lapses: row.lapses ?? 0,
-      cardState: row.card_state ?? 0,
-      scheduledDays: row.scheduled_days ?? 0,
-      learningSteps: row.learning_steps ?? 0,
-      lastReviewedAt: row.last_reviewed_at ?? undefined,
-      lastRating: (row.last_rating as ReviewRating | null) ?? undefined,
-      accuracyEwma: row.accuracy_ewma ?? 0.5,
-      updatedAt: row.updated_at,
-    }
+  return {
+    pointId: row.mastery_point_id,
+    stability: row.stability ?? 0,
+    difficulty: row.difficulty ?? 0,
+    dueAt: row.due_at ?? undefined,
+    reps: row.reps ?? 0,
+    lapses: row.lapses ?? 0,
+    cardState: row.card_state ?? 0,
+    scheduledDays: row.scheduled_days ?? 0,
+    learningSteps: row.learning_steps ?? 0,
+    lastReviewedAt: row.last_reviewed_at ?? undefined,
+    lastRating: (row.last_rating as ReviewRating | null) ?? undefined,
+    accuracyEwma: row.accuracy_ewma ?? 0.5,
+    updatedAt: row.updated_at,
   }
+}
 
+function mapScope(row: ScopeRow): ScopeMasteryRow {
+  return {
+    scopeId: row.scope_id,
+    scopeTitle: row.scope_title,
+    pointId: row.point_id,
+    mastery: toMastery(row),
+  }
+}
+
+function mapCard(row: CardRow): ReviewCard {
   return {
     pointId: row.point_id,
     title: row.title,
@@ -164,7 +203,7 @@ function mapCard(row: CardRow): ReviewCard {
     carrierTitle: row.carrier_title,
     pageStart: row.page_start,
     pageEnd: row.page_end,
-    mastery,
+    mastery: toMastery(row),
   }
 }
 
@@ -373,6 +412,54 @@ export class SchedulerStore {
       .get() as { count: number }
 
     return row.count
+  }
+
+  /** 按载体聚合已确认知识点及其掌握状态，供进度面板使用。 */
+  listConfirmedByCarrier(): ScopeMasteryRow[] {
+    const rows = this.db
+      .prepare(
+        `SELECT c.id AS scope_id, c.title AS scope_title, kp.id AS point_id,
+                m.point_id AS mastery_point_id, m.stability, m.difficulty, m.due_at,
+                m.reps, m.lapses, m.card_state, m.scheduled_days, m.learning_steps,
+                m.last_reviewed_at, m.last_rating, m.accuracy_ewma, m.updated_at
+         FROM knowledge_points kp
+         JOIN carriers c ON c.id = kp.carrier_id
+         LEFT JOIN mastery m ON m.point_id = kp.id
+         WHERE kp.status = 'confirmed' AND c.deleted_at IS NULL
+         ORDER BY c.title ASC, kp.page_start ASC`,
+      )
+      .all() as unknown as ScopeRow[]
+
+    return rows.map(mapScope)
+  }
+
+  /** 按课程聚合已确认知识点；同一知识点在多门课程中分别计入。 */
+  listConfirmedByCourse(): ScopeMasteryRow[] {
+    const rows = this.db
+      .prepare(
+        `SELECT co.id AS scope_id, co.title AS scope_title, kp.id AS point_id,
+                m.point_id AS mastery_point_id, m.stability, m.difficulty, m.due_at,
+                m.reps, m.lapses, m.card_state, m.scheduled_days, m.learning_steps,
+                m.last_reviewed_at, m.last_rating, m.accuracy_ewma, m.updated_at
+         FROM course_points cp
+         JOIN courses co ON co.id = cp.course_id
+         JOIN knowledge_points kp ON kp.id = cp.point_id
+         LEFT JOIN mastery m ON m.point_id = kp.id
+         WHERE kp.status = 'confirmed' AND co.status = 'active'
+         ORDER BY co.title ASC, cp.position ASC`,
+      )
+      .all() as unknown as ScopeRow[]
+
+    return rows.map(mapScope)
+  }
+
+  /** 活跃计划中最大的每日分钟；没有计划时返回 30。 */
+  activeDailyMinutes(): number {
+    const row = this.db
+      .prepare("SELECT MAX(daily_minutes) AS minutes FROM plans WHERE status = 'active'")
+      .get() as { minutes: number | null }
+
+    return Math.max(1, row.minutes ?? 30)
   }
 
   countDue(nowIso: string): number {

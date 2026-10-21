@@ -1,8 +1,10 @@
 import type { Context } from '@deepseek-ai/cordis'
 import {
   masteryScore,
+  planDailyBudget,
   retrievability,
   scheduleReview,
+  type BudgetResult,
   type ReviewRating,
   type ReviewState,
 } from '@sublate/core'
@@ -46,6 +48,13 @@ interface PointLike {
   status: string
 }
 
+interface ScopeRowLike {
+  scopeId: string
+  scopeTitle: string
+  pointId: string
+  mastery?: MasteryLike
+}
+
 interface SchedulerDbLike {
   get(pointId: string): MasteryLike | undefined
   saveReview(input: {
@@ -69,6 +78,9 @@ interface SchedulerDbLike {
   countConfirmed(): number
   getPoint(pointId: string): PointLike | undefined
   listAll(): MasteryLike[]
+  listConfirmedByCarrier(): ScopeRowLike[]
+  listConfirmedByCourse(): ScopeRowLike[]
+  activeDailyMinutes(): number
 }
 
 interface IpcLike {
@@ -109,6 +121,28 @@ export interface ReviewResult {
   intervalDays: number
   mastery: number
   accuracy: number
+}
+
+export interface ScopeProgress {
+  id: string
+  title: string
+  total: number
+  learned: number
+  mastery: number
+}
+
+export interface MasteryBucket {
+  label: string
+  count: number
+}
+
+export interface ReviewOverview {
+  stats: ReviewStats
+  dailyMinutes: number
+  budget: BudgetResult
+  byCarrier: ScopeProgress[]
+  byCourse: ScopeProgress[]
+  distribution: MasteryBucket[]
 }
 
 export interface SchedulerServiceDeps {
@@ -155,6 +189,50 @@ function toView(card: CardLike, now: Date): ReviewCardView {
     masteryScore: masteryScore(state, now),
     retrievability: retrievability(state, now),
   }
+}
+
+/** 按载体或课程聚合知识点数量、已复习数量与平均掌握度。 */
+function aggregateScopes(rows: ScopeRowLike[], now: Date): ScopeProgress[] {
+  const grouped = new Map<string, { title: string; total: number; learned: number; score: number }>()
+
+  for (const row of rows) {
+    const entry = grouped.get(row.scopeId) ?? {
+      title: row.scopeTitle,
+      total: 0,
+      learned: 0,
+      score: 0,
+    }
+
+    entry.total += 1
+    if (row.mastery && row.mastery.reps > 0) entry.learned += 1
+    entry.score += masteryScore(row.mastery ? toReviewState(row.mastery) : undefined, now)
+    grouped.set(row.scopeId, entry)
+  }
+
+  return [...grouped.entries()]
+    .map(([id, entry]) => ({
+      id,
+      title: entry.title,
+      total: entry.total,
+      learned: entry.learned,
+      mastery: entry.total > 0 ? entry.score / entry.total : 0,
+    }))
+    .sort((left, right) => right.total - left.total || left.title.localeCompare(right.title))
+}
+
+const BUCKET_LABELS = ['0–25%', '25–50%', '50–75%', '75–100%']
+
+/** 掌握度四档分布；未复习知识点落在 0–25%。 */
+function distributionOf(rows: ScopeRowLike[], now: Date): MasteryBucket[] {
+  const counts = [0, 0, 0, 0]
+
+  for (const row of rows) {
+    const score = masteryScore(row.mastery ? toReviewState(row.mastery) : undefined, now)
+    const index = Math.min(3, Math.floor(score * 4))
+    counts[index] = (counts[index] ?? 0) + 1
+  }
+
+  return BUCKET_LABELS.map((label, index) => ({ label, count: counts[index]! }))
 }
 
 /** 复习调度服务：到期队列、自评提交与掌握度统计。 */
@@ -239,6 +317,26 @@ export class SchedulerService {
   history(pointId: string, limit = 20): unknown[] {
     return this.db.history(pointId, limit)
   }
+
+  /** 进度面板所需的聚合视图：预算、载体消化、课程进度与掌握度分布。 */
+  overview(now = new Date()): ReviewOverview {
+    const stats = this.stats(now)
+    const dailyMinutes = this.db.activeDailyMinutes()
+    const carrierRows = this.db.listConfirmedByCarrier()
+
+    return {
+      stats,
+      dailyMinutes,
+      budget: planDailyBudget({
+        dailyMinutes,
+        dueCount: stats.dueCount,
+        newCount: stats.newCount,
+      }),
+      byCarrier: aggregateScopes(carrierRows, now),
+      byCourse: aggregateScopes(this.db.listConfirmedByCourse(), now),
+      distribution: distributionOf(carrierRows, now),
+    }
+  }
 }
 
 const QueueInput = z.object({
@@ -272,6 +370,8 @@ function registerChannels(ctx: Context, service: SchedulerService, ipc: IpcLike)
   })
 
   register('review:stats', () => service.stats())
+
+  register('review:overview', () => service.overview())
 
   register('review:history', (input: unknown) => {
     const data = HistoryInput.parse(input)

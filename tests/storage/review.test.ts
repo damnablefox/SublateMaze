@@ -138,6 +138,31 @@ describe('storage-sqlite 复习仓储', () => {
     expect(sqlite.scheduler.countDue('2026-10-26T08:00:00.000Z')).toBe(3)
   })
 
+  it('按载体与课程聚合掌握状态并读取活跃计划时长', () => {
+    const { sqlite, points } = setup()
+
+    sqlite.scheduler.save(points[0]!.id, state('2026-10-25T08:00:00.000Z'))
+
+    const course = sqlite.course.create({ title: '线性代数', dailyMinutes: 45 })
+    sqlite.course.addPoints(course.id, null, [points[0]!.id, points[1]!.id])
+    sqlite.plans.create({
+      courseId: course.id,
+      startDate: '2026-10-22',
+      days: 3,
+      dailyMinutes: 45,
+    })
+
+    const byCarrier = sqlite.scheduler.listConfirmedByCarrier()
+    expect(byCarrier).toHaveLength(3)
+    expect(byCarrier.filter(row => row.mastery).map(row => row.pointId)).toEqual([points[0]!.id])
+
+    const byCourse = sqlite.scheduler.listConfirmedByCourse()
+    expect(byCourse.map(row => row.scopeTitle)).toEqual(['线性代数', '线性代数'])
+    expect(byCourse[0]?.mastery?.reps).toBe(1)
+
+    expect(sqlite.scheduler.activeDailyMinutes()).toBe(45)
+  })
+
   it('删除载体级联清理掌握状态与复习记录', () => {
     const { sqlite, carrier, points } = setup()
 

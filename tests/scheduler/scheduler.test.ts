@@ -127,4 +127,34 @@ describe('scheduler 复习服务', () => {
     expect(stats.averageMastery).toBeGreaterThan(0)
     expect(stats.averageMastery).toBeLessThan(0.5)
   })
+
+  it('进度总览按载体与课程聚合，并给出预算建议', () => {
+    const { sqlite, points, service } = setup()
+
+    service.review({ pointId: points[0]!.id, rating: 3 }, DAY0)
+
+    const course = sqlite.course.create({ title: '线性代数', dailyMinutes: 45 })
+    sqlite.course.addPoints(
+      course.id,
+      null,
+      points.map(point => point.id),
+    )
+    sqlite.plans.create({
+      courseId: course.id,
+      startDate: '2026-10-22',
+      days: 5,
+      dailyMinutes: 45,
+    })
+
+    const overview = service.overview(DAY0)
+
+    expect(overview.dailyMinutes).toBe(45)
+    expect(overview.stats.totalPoints).toBe(3)
+    expect(overview.byCarrier[0]).toMatchObject({ total: 3, learned: 1 })
+    expect(overview.byCarrier[0]!.mastery).toBeGreaterThan(0)
+    expect(overview.byCourse[0]).toMatchObject({ title: '线性代数', total: 3, learned: 1 })
+    expect(overview.distribution.reduce((sum, bucket) => sum + bucket.count, 0)).toBe(3)
+    expect(overview.distribution.find(bucket => bucket.label === '75–100%')?.count).toBe(1)
+    expect(overview.budget.newSlots).toBe(2)
+  })
 })
