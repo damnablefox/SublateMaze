@@ -31,3 +31,65 @@ export interface PluginModule {
 export function definePlugin<T extends PluginModule>(plugin: T): T {
   return plugin
 }
+
+/** 工具注册信息：插件通过 ctx.tools.register 提供能力。 */
+export interface ToolRegistration<I = unknown> {
+  name: string
+  description: string
+  permission: Permission
+  input: { parse(value: unknown): I }
+  execute(input: I, context: { sessionId?: string }): unknown | Promise<unknown>
+}
+
+export interface ToolInfo {
+  name: string
+  description: string
+  permission: Permission
+}
+
+export interface ToolsApi {
+  register(tool: ToolRegistration<any>): () => void
+  invoke(
+    name: string,
+    input: unknown,
+    options?: { sessionId?: string; confirmed?: boolean },
+  ): Promise<unknown>
+  list(): ToolInfo[]
+}
+
+export interface AgentEvent {
+  seq: number
+  type: string
+  payload: unknown
+  createdAt: string
+}
+
+export interface SessionApi {
+  start(goal: string): { id: string; goal: string; createdAt: string }
+  append(sessionId: string, type: string, payload: unknown): AgentEvent
+  get(sessionId: string): { id: string; goal: string; events: AgentEvent[] } | undefined
+  list(): { id: string; goal: string; createdAt: string; eventCount: number }[]
+}
+
+export type AgentDecision =
+  | { type: 'done'; answer: string }
+  | { type: 'tool'; tool: string; args: unknown }
+
+export interface AgentRunOptions {
+  goal: string
+  decide: (state: { step: number; history: AgentEvent[] }) => AgentDecision | Promise<AgentDecision>
+  maxSteps?: number
+  confirm?: (tool: string, args: unknown) => boolean | Promise<boolean>
+}
+
+export interface AgentRunResult {
+  sessionId: string
+  ok: boolean
+  answer?: string
+  error?: string
+  events: AgentEvent[]
+}
+
+export interface AgentApi {
+  run(options: AgentRunOptions): Promise<AgentRunResult>
+}

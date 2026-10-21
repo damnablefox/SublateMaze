@@ -1,0 +1,9 @@
+- insert:
+    - id: tools
+      name: '@sublate/plugin-tools'
+    - id: session
+      name: '@sublate/plugin-session'
+    - id: agent
+      name: '@sublate/plugin-agent'
+    - id: demo
+      name: '@sublate/plugin-demo'

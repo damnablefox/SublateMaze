@@ -1,3 +1,18 @@
 - insert:
+    - id: storage-sqlite
+      name: '@sublate/plugin-storage-sqlite'
+      config:
+        path: '.sublate/sublate.db'
+    - id: storage-lancedb
+      name: '@sublate/plugin-storage-lancedb'
+      config:
+        path: '.sublate/lance'
+        dim: 1024
+    - id: tools
+      name: '@sublate/plugin-tools'
+    - id: session
+      name: '@sublate/plugin-session'
+    - id: agent
+      name: '@sublate/plugin-agent'
     - id: demo
       name: '@sublate/plugin-demo'

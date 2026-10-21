@@ -3,5 +3,35 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Windows Electron 壳（M0 后续接入）"
+  "description": "Windows Electron 壳",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@sublate/kernel": "workspace:*",
+    "@sublate/plugin-agent": "workspace:*",
+    "@sublate/plugin-demo": "workspace:*",
+    "@sublate/plugin-sdk": "workspace:*",
+    "@sublate/plugin-session": "workspace:*",
+    "@sublate/plugin-storage-lancedb": "workspace:*",
+    "@sublate/plugin-storage-sqlite": "workspace:*",
+    "@sublate/plugin-tools": "workspace:*",
+    "@sublate/shared": "workspace:*",
+    "yaml": "^2.8.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "45.0.0",
+    "electron-vite": "6.0.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "vite": "8.3.5"
+  }
 }

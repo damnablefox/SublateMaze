@@ -1,0 +1,19 @@
+{
+  "name": "@sublate/plugin-storage-lancedb",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "LanceDB 向量索引插件：可重建的派生索引，提供 ctx.vector",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@lancedb/lancedb": "0.40.0",
+    "@sublate/plugin-sdk": "workspace:*",
+    "apache-arrow": "18.1.0",
+    "zod": "^4.0.0"
+  }
+}

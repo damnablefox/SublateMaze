@@ -7,9 +7,12 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 
 describe('kernel profile 加载', () => {
   it('加载默认 profile 并注册 demo 服务', async () => {
-    const { ctx, plugins } = await createKernel(resolve(root, 'profiles/default/cordis.yml'))
+    const { ctx, plugins } = await createKernel(
+      resolve(root, 'tests/fixtures/demo-profile.yml'),
+    )
 
     expect(plugins).toEqual([
+      { id: 'tools', name: '@sublate/plugin-tools', status: 'running' },
       { id: 'demo', name: '@sublate/plugin-demo', status: 'running' },
     ])
 

@@ -1,0 +1,16 @@
+{
+  "name": "@sublate/plugin-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "工具注册表：参数校验、权限分级与执行",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@sublate/plugin-sdk": "workspace:*"
+  }
+}

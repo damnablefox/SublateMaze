@@ -9,10 +9,12 @@ coverage/
 
 # 原生模块与打包资源
 *.node
+apps/desktop/.electron-data/
 apps/desktop/resources/python/
 apps/desktop/release/
 
 # 本地数据与密钥
+.sublate/
 *.db
 *.db-wal
 *.db-shm

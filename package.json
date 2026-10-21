@@ -18,12 +18,18 @@
   "devDependencies": {
     "@sublate/core": "workspace:*",
     "@sublate/kernel": "workspace:*",
+    "@sublate/plugin-agent": "workspace:*",
     "@sublate/plugin-demo": "workspace:*",
     "@sublate/plugin-sdk": "workspace:*",
+    "@sublate/plugin-session": "workspace:*",
+    "@sublate/plugin-storage-lancedb": "workspace:*",
+    "@sublate/plugin-storage-sqlite": "workspace:*",
+    "@sublate/plugin-tools": "workspace:*",
     "@sublate/shared": "workspace:*",
     "@types/node": "^24.0.0",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.0",
+    "zod": "^4.0.0"
   }
 }

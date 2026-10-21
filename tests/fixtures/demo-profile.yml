@@ -1,0 +1,5 @@
+- insert:
+    - id: tools
+      name: '@sublate/plugin-tools'
+    - id: demo
+      name: '@sublate/plugin-demo'

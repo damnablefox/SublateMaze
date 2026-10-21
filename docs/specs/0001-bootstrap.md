@@ -1,6 +1,6 @@
 # Spec-0001：M0 工程骨架
 
-- 状态：进行中
+- 状态：已完成
 - 日期：2026-10-21
 
 ## 目标
@@ -55,11 +55,25 @@ createKernel(profilePath: string): Promise<{
 
 ## 验收标准
 
-- `pnpm dev:kernel` 输出 demo 插件 `running`，并打印 `pong: SublateMaze`；
+- `pnpm dev:kernel` 输出 6 个插件 `running`，并打印 `pong: SublateMaze`；
 - `pnpm typecheck` 无错误；
-- `pnpm test` 两个用例通过：正常加载、缺失插件被标记 failed；
+- `pnpm test` 12 个用例通过：kernel、SQLite、LanceDB、Agent；
 - `cargo test` 通过；
-- 远程仓库收到首次提交。
+- `pnpm --filter @sublate/desktop build` 通过，Electron 开发模式窗口启动，插件树全部 running；
+- 远程仓库收到提交。
+
+## 实际结果（2026-10-21）
+
+- 插件树：storage-sqlite、storage-lancedb、tools、session、agent、demo 全部 running；
+- 测试：12 passed（kernel 2、SQLite 3、LanceDB 4、Agent 3）；
+- Electron 45 + electron-vite 6 构建与启动正常；
+- 受限环境下将 `userData` 指向项目内 `.electron-data`，避免写入 `%APPDATA%` 失败。
+
+## 后续
+
+- Agent 决策函数仍由调用方注入，M2 接入 `ai-provider`；
+- `session` 当前为内存实现，M1 接入 SQLite 审计表；
+- Rust napi 原生模块与打包流程在 M0 后续补完。
 
 ## 测试点
 
