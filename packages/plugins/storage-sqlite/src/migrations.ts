@@ -335,3 +335,39 @@ CREATE TABLE IF NOT EXISTS note_refs (
 
 CREATE INDEX IF NOT EXISTS idx_note_refs_ref ON note_refs (ref_type, ref_id);
 `
+
+/** 迁移 010：专业集、集合节点与关系。 */
+export const MIGRATION_010 = `
+CREATE TABLE IF NOT EXISTS sets (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS set_nodes (
+  id TEXT PRIMARY KEY,
+  set_id TEXT NOT NULL REFERENCES sets (id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  ref_id TEXT NOT NULL,
+  position INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  UNIQUE (set_id, kind, ref_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_set_nodes_set ON set_nodes (set_id, position);
+CREATE INDEX IF NOT EXISTS idx_set_nodes_ref ON set_nodes (kind, ref_id);
+
+CREATE TABLE IF NOT EXISTS set_edges (
+  id TEXT PRIMARY KEY,
+  set_id TEXT NOT NULL REFERENCES sets (id) ON DELETE CASCADE,
+  source_id TEXT NOT NULL REFERENCES set_nodes (id) ON DELETE CASCADE,
+  target_id TEXT NOT NULL REFERENCES set_nodes (id) ON DELETE CASCADE,
+  kind TEXT NOT NULL DEFAULT 'related',
+  created_at TEXT NOT NULL,
+  UNIQUE (set_id, source_id, target_id, kind)
+);
+
+CREATE INDEX IF NOT EXISTS idx_set_edges_set ON set_edges (set_id);
+`

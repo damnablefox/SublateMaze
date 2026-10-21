@@ -41,10 +41,10 @@ afterEach(() => {
 })
 
 describe('storage-sqlite 笔记仓储', () => {
-  it('迁移到版本 9，创建后可读取摘要', () => {
+  it('迁移到版本 10，创建后可读取摘要', () => {
     const sqlite = setup()
 
-    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(9)
+    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(10)
 
     const note = createNote(sqlite, '线性代数', '# 向量空间\n\n见 [[群论]]')
 

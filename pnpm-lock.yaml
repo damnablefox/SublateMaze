@@ -65,6 +65,9 @@ importers:
       '@sublate/plugin-session':
         specifier: workspace:*
         version: link:packages/plugins/session
+      '@sublate/plugin-sets':
+        specifier: workspace:*
+        version: link:packages/plugins/sets
       '@sublate/plugin-storage-lancedb':
         specifier: workspace:*
         version: link:packages/plugins/storage-lancedb
@@ -161,6 +164,9 @@ importers:
       '@sublate/plugin-session':
         specifier: workspace:*
         version: link:../../packages/plugins/session
+      '@sublate/plugin-sets':
+        specifier: workspace:*
+        version: link:../../packages/plugins/sets
       '@sublate/plugin-storage-lancedb':
         specifier: workspace:*
         version: link:../../packages/plugins/storage-lancedb
@@ -443,6 +449,21 @@ importers:
       '@sublate/plugin-sdk':
         specifier: workspace:*
         version: link:../../plugin-sdk
+
+  packages/plugins/sets:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: 4.0.5
+        version: 4.0.5(@deepseek-ai/cordis-plugin-include@1.0.10)(@deepseek-ai/cordis-plugin-loader@1.0.6)
+      '@sublate/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@sublate/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../plugin-sdk
+      zod:
+        specifier: ^4.0.0
+        version: 4.6.7
 
   packages/plugins/storage-lancedb:
     dependencies:

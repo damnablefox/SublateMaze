@@ -29,7 +29,7 @@ afterEach(() => {
 })
 
 describe('storage-sqlite AI 调用记录', () => {
-  it('迁移到版本 9 并汇总调用与 token', () => {
+  it('迁移到版本 10 并汇总调用与 token', () => {
     const service = createService()
 
     service.aiCalls.record({
@@ -59,7 +59,7 @@ describe('storage-sqlite AI 调用记录', () => {
     expect(
       (service.db.prepare('PRAGMA user_version').get() as { user_version: number })
         .user_version,
-    ).toBe(9)
+    ).toBe(10)
 
     const stats = service.aiCalls.stats()
     expect(stats.calls).toBe(3)

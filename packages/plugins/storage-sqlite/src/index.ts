@@ -20,10 +20,12 @@ import {
   MIGRATION_007,
   MIGRATION_008,
   MIGRATION_009,
+  MIGRATION_010,
 } from './migrations.ts'
 import { NoteStore } from './notes.ts'
 import { PlanStore } from './plans.ts'
 import { SchedulerStore } from './scheduler.ts'
+import { SetStore } from './sets.ts'
 
 export * from './ai-calls.ts'
 export * from './ai-jobs.ts'
@@ -36,6 +38,7 @@ export * from './knowledge.ts'
 export * from './notes.ts'
 export * from './plans.ts'
 export * from './scheduler.ts'
+export * from './sets.ts'
 
 export const name = 'storage-sqlite'
 export const inject: string[] = []
@@ -64,6 +67,7 @@ export class SqliteService {
   readonly scheduler: SchedulerStore
   readonly agentSessions: AgentSessionStore
   readonly notes: NoteStore
+  readonly sets: SetStore
 
   constructor(dbPath: string) {
     mkdirSync(dirname(dbPath), { recursive: true })
@@ -81,6 +85,7 @@ export class SqliteService {
     this.scheduler = new SchedulerStore(this.db)
     this.agentSessions = new AgentSessionStore(this.db)
     this.notes = new NoteStore(this.db)
+    this.sets = new SetStore(this.db)
     this.migrate()
   }
 
@@ -99,6 +104,7 @@ export class SqliteService {
     if (version < 7) this.runMigration(MIGRATION_007, 7)
     if (version < 8) this.runMigration(MIGRATION_008, 8)
     if (version < 9) this.runMigration(MIGRATION_009, 9)
+    if (version < 10) this.runMigration(MIGRATION_010, 10)
   }
 
   private runMigration(sql: string, targetVersion: number): void {
