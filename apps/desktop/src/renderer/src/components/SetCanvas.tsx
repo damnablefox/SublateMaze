@@ -111,7 +111,13 @@ function BookIcon() {
 }
 
 function edgePath(source: Position, target: Position): string {
-  const dx = Math.max(56, Math.abs(target.x - source.x) * 0.45)
+  const deltaX = target.x - source.x
+  const deltaY = target.y - source.y
+  // 张力公式对齐 UGraphEditorSettings::ComputeSplineTangent，并按画布尺度限幅。
+  const tension = deltaX >= 0
+    ? Math.min(Math.abs(deltaX), 1000) + Math.min(Math.abs(deltaY), 1000)
+    : 2 * Math.min(Math.abs(deltaX), 200) + 1.5 * Math.min(Math.abs(deltaY), 200)
+  const dx = Math.max(28, Math.min(tension, 180))
 
   return `M ${source.x} ${source.y} C ${source.x + dx} ${source.y}, ${target.x - dx} ${target.y}, ${target.x} ${target.y}`
 }
@@ -467,7 +473,7 @@ export function SetCanvas({
             return (
               <path
                 key={edge.id}
-                className={`bp-edge ${edge.kind}`}
+                className={`bp-edge ${edge.kind} from-${sourceNode.kind}`}
                 d={edgePath(pinAnchor(sourcePosition, sourcePin), pinAnchor(targetPosition, targetPin))}
                 markerEnd={edge.kind === 'prereq' ? 'url(#bp-arrow-exec)' : undefined}
                 onPointerDown={event => event.stopPropagation()}
@@ -481,7 +487,7 @@ export function SetCanvas({
 
           {linkPreview && previewPosition && previewPin ? (
             <path
-              className={`bp-edge bp-link-preview ${linkPreview.kind}`}
+              className={`bp-edge bp-link-preview ${linkPreview.kind} from-${previewNode?.kind ?? 'point'}`}
               d={edgePath(pinAnchor(previewPosition, previewPin), {
                 x: linkPreview.x,
                 y: linkPreview.y,

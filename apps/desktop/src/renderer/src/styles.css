@@ -2397,16 +2397,20 @@
 
 .bp-edge.prereq {
   stroke: #ededed;
-  stroke-width: 2.4;
+  stroke-width: 2.5;
   pointer-events: stroke;
   cursor: pointer;
 }
 
 .bp-edge.related {
-  stroke: #4fc3e8;
-  stroke-width: 1.6;
+  stroke: #00aaff;
+  stroke-width: 1.5;
   pointer-events: stroke;
   cursor: pointer;
+}
+
+.bp-edge.related.from-carrier {
+  stroke: #39d353;
 }
 
 .bp-edge.prereq:hover {
@@ -2414,7 +2418,11 @@
 }
 
 .bp-edge.related:hover {
-  stroke: #9be7ff;
+  stroke: #66ccff;
+}
+
+.bp-edge.related.from-carrier:hover {
+  stroke: #7ff08a;
 }
 
 .bp-link-preview {
@@ -2538,7 +2546,11 @@
 }
 
 .bp-pin.data .bp-pin-label {
-  color: #9fc9d8;
+  color: #8fc7e8;
+}
+
+.bp-node.carrier .bp-pin.data .bp-pin-label {
+  color: #93d99b;
 }
 
 .bp-pin-mark {
@@ -2560,8 +2572,12 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #4fc3e8;
+  background: #00aaff;
   box-shadow: 0 0 0 1px #1a1a1a;
+}
+
+.bp-node.carrier .bp-pin.data .bp-pin-mark {
+  background: #39d353;
 }
 
 .bp-pin.exec .bp-pin-mark {
@@ -2642,7 +2658,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4fc3e8;
+  background: #00aaff;
 }
 
 .bp-button {
