@@ -2338,12 +2338,12 @@
 
 .blueprint-canvas {
   position: relative;
-  height: 500px;
+  height: 560px;
   overflow: hidden;
-  border: 0.5px solid #323744;
-  border-radius: var(--radius-lg);
-  background: #14161a;
-  color: #e7eaf0;
+  border: 1px solid #383838;
+  border-radius: 3px;
+  background: #1e1e1e;
+  color: #ededed;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -2369,17 +2369,17 @@
 
 .blueprint-grid {
   position: absolute;
-  left: -2000px;
-  top: -2000px;
-  width: 6000px;
-  height: 6000px;
-  background-color: #14161a;
+  left: -4000px;
+  top: -4000px;
+  width: 12000px;
+  height: 12000px;
+  background-color: #1e1e1e;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
-  background-size: 32px 32px, 32px 32px, 160px 160px, 160px 160px;
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 16px 16px, 16px 16px, 128px 128px, 128px 128px;
 }
 
 .blueprint-edges {
@@ -2392,189 +2392,281 @@
 
 .bp-edge {
   fill: none;
-  stroke-width: 2;
   stroke-linecap: round;
 }
 
 .bp-edge.prereq {
-  stroke: #7fa8ff;
+  stroke: #ededed;
+  stroke-width: 2.4;
   pointer-events: stroke;
   cursor: pointer;
 }
 
 .bp-edge.related {
-  stroke: #8c93a3;
-  stroke-dasharray: 6 5;
+  stroke: #4fc3e8;
+  stroke-width: 1.6;
   pointer-events: stroke;
   cursor: pointer;
 }
 
-.bp-edge:hover {
-  stroke: #c4d4ff;
+.bp-edge.prereq:hover {
+  stroke: #ffb84d;
+}
+
+.bp-edge.related:hover {
+  stroke: #9be7ff;
 }
 
 .bp-link-preview {
-  stroke: #c4d4ff;
   stroke-dasharray: 5 4;
   pointer-events: none;
+  opacity: 0.85;
 }
 
 .bp-node {
   position: absolute;
-  width: 240px;
+  width: 248px;
   height: 96px;
-  border: 1px solid #3a3f49;
-  border-radius: 8px;
-  background: #1d2026;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  border: 1px solid #414141;
+  border-radius: 3px;
+  background: #262626;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.55);
   cursor: grab;
 }
 
 .bp-node.selected {
-  border-color: #5b8dff;
-  box-shadow: 0 0 0 1px #5b8dff, 0 10px 24px rgba(0, 0, 0, 0.45);
+  border-color: #f0a020;
+  box-shadow: 0 0 0 1px #f0a020, 0 4px 14px rgba(0, 0, 0, 0.6);
 }
 
 .bp-node.missing {
   border-style: dashed;
-  opacity: 0.65;
+  opacity: 0.62;
 }
 
 .bp-node-header {
-  height: 28px;
-  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 5px 0 8px;
   overflow: hidden;
-  border-radius: 7px 7px 0 0;
-  background: #253044;
-  color: #dbe6ff;
+  border-radius: 2px 2px 0 0;
+  background: #1f4a7a;
+  color: #f2f2f2;
   font-size: 11px;
-  font-weight: 600;
-  line-height: 28px;
+  font-weight: 500;
   white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .bp-node.carrier .bp-node-header {
-  background: #3a2b4d;
-  color: #e9ddff;
+  background: #1f5a52;
 }
 
-.bp-node-body {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 7px 10px;
+.bp-node-icon {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  opacity: 0.9;
 }
 
-.bp-node-kind {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #9aa4b5;
-}
-
-.bp-node-meta {
+.bp-node-title {
+  flex: 1;
   overflow: hidden;
-  font-size: 11px;
-  color: #c3cad6;
+  text-overflow: ellipsis;
+}
+
+.bp-node-badge {
+  flex: none;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #e3ebf3;
+  font-size: 9px;
+  line-height: 14px;
+}
+
+.bp-node-badge.draft {
+  color: #f0d58a;
+}
+
+.bp-node-badge.confirmed {
+  color: #9be6a8;
+}
+
+.bp-node-badge.rejected {
+  color: #f1a1a1;
+}
+
+.bp-node-badge.missing {
+  color: #c2c2c2;
+}
+
+.bp-node-subtitle {
+  height: 20px;
+  padding: 0 10px;
+  overflow: hidden;
+  color: #9d9d9d;
+  font-size: 10px;
+  line-height: 20px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.bp-node-status {
+.bp-pin {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 12px;
   font-size: 10px;
-  color: #7fa8ff;
+  line-height: 22px;
 }
 
-.bp-port {
+.bp-pin.out {
+  justify-content: flex-end;
+}
+
+.bp-pin-label {
+  pointer-events: none;
+}
+
+.bp-pin.exec .bp-pin-label {
+  color: #ededed;
+}
+
+.bp-pin.data .bp-pin-label {
+  color: #9fc9d8;
+}
+
+.bp-pin-mark {
   position: absolute;
   top: 50%;
-  width: 10px;
-  height: 10px;
-  border: 2px solid #14161a;
-  border-radius: 999px;
   transform: translateY(-50%);
-}
-
-.bp-port.in {
-  left: -6px;
-  background: #9aa4b5;
-}
-
-.bp-port.out {
-  right: -6px;
-  background: #7fa8ff;
   cursor: crosshair;
 }
 
-.bp-node:hover .bp-port.out,
-.bp-node.selected .bp-port.out {
-  background: #c4d4ff;
+.bp-pin.in .bp-pin-mark {
+  left: -7px;
+}
+
+.bp-pin.out .bp-pin-mark {
+  right: -7px;
+}
+
+.bp-pin.data .bp-pin-mark {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4fc3e8;
+  box-shadow: 0 0 0 1px #1a1a1a;
+}
+
+.bp-pin.exec .bp-pin-mark {
+  width: 0;
+  height: 0;
+  border-left: 9px solid #ededed;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+
+.bp-node:hover .bp-pin.out .bp-pin-mark,
+.bp-pin-mark:hover {
+  filter: brightness(1.35);
 }
 
 .bp-node-delete {
-  position: absolute;
-  right: -8px;
-  top: -8px;
-  width: 20px;
-  height: 20px;
-  border: 1px solid #4a4f5b;
-  border-radius: 999px;
-  background: #2b2f38;
-  color: #e7eaf0;
-  font-size: 13px;
-  line-height: 1;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #e8e8e8;
+  font-size: 12px;
+  line-height: 12px;
   cursor: pointer;
 }
 
 .bp-node-delete:hover {
-  background: #3b404c;
+  background: #a33333;
 }
 
 .blueprint-toolbar {
   position: absolute;
-  right: 12px;
-  top: 12px;
+  right: 10px;
+  top: 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 6px;
-  border: 1px solid #333842;
-  border-radius: 8px;
-  background: rgba(20, 22, 26, 0.88);
-  backdrop-filter: blur(6px);
+  gap: 8px;
+  padding: 4px 6px;
+  border: 1px solid #3a3a3a;
+  border-radius: 3px;
+  background: rgba(30, 30, 30, 0.92);
+  backdrop-filter: blur(4px);
   z-index: 5;
 }
 
-.bp-select,
+.bp-toolbar-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #8d8d8d;
+}
+
+.bp-toolbar-divider {
+  width: 1px;
+  height: 14px;
+  background: #3a3a3a;
+}
+
+.bp-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #b8b8b8;
+}
+
+.bp-legend-mark.exec {
+  width: 0;
+  height: 0;
+  border-left: 7px solid #ededed;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+.bp-legend-mark.data {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4fc3e8;
+}
+
 .bp-button {
-  height: 25px;
+  height: 22px;
   padding: 0 8px;
-  border: 1px solid #3b414d;
-  border-radius: 6px;
-  background: #23262c;
-  color: #dbe1ea;
+  border: 1px solid #454545;
+  border-radius: 2px;
+  background: #2b2b2b;
+  color: #dedede;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 10px;
   cursor: pointer;
 }
 
-.bp-select {
-  padding: 0 6px;
-}
-
-.bp-button:hover,
-.bp-select:hover {
-  border-color: #596172;
-  background: #2c3038;
+.bp-button:hover {
+  border-color: #666;
+  background: #363636;
 }
 
 .bp-zoom {
-  min-width: 38px;
+  min-width: 36px;
   font-family: var(--font-code);
   font-size: 10px;
-  color: #8f98a8;
+  color: #9a9a9a;
   text-align: right;
 }
 
@@ -2583,7 +2675,7 @@
   left: 12px;
   bottom: 10px;
   font-size: 10px;
-  color: #7f8794;
+  color: #8d8d8d;
   pointer-events: none;
 }
 
@@ -2592,13 +2684,13 @@
   inset: 0;
   display: grid;
   place-items: center;
-  color: #8a93a2;
+  color: #8d8d8d;
   font-size: 13px;
   pointer-events: none;
 }
 
 @media (max-width: 1080px) {
   .blueprint-canvas {
-    height: 420px;
+    height: 440px;
   }
 }

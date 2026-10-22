@@ -205,8 +205,9 @@ export class SetsService {
     const target = nodes.find(node => node.id === input.targetId)
 
     if (!source || !target) throw new Error('关系端点必须属于当前专业集')
-    if (source.kind !== 'point' || target.kind !== 'point') {
-      throw new Error('关系只能建立在知识点之间')
+    if (target.kind !== 'point') throw new Error('关系目标必须是知识点')
+    if (input.kind === 'prereq' && source.kind !== 'point') {
+      throw new Error('前置关系的起点必须是知识点')
     }
 
     this.db.sets.addEdge(id, input)

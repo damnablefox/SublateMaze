@@ -8,8 +8,12 @@ import {
 import { layoutSetNodes } from '@sublate/core'
 import type { SetEdge, SetEdgeKind, SetNode } from '../env'
 
-const NODE_WIDTH = 240
+const NODE_WIDTH = 248
 const NODE_HEIGHT = 96
+const HEADER_HEIGHT = 24
+const SUBTITLE_HEIGHT = 20
+const PIN_ROW_HEIGHT = 22
+const PIN_TOP = HEADER_HEIGHT + SUBTITLE_HEIGHT + PIN_ROW_HEIGHT / 2
 const MIN_SCALE = 0.4
 const MAX_SCALE = 1.8
 
@@ -24,10 +28,25 @@ interface ViewState {
   scale: number
 }
 
+interface PinSpec {
+  side: 'in' | 'out'
+  kind: SetEdgeKind
+  type: 'exec' | 'data'
+  label: string
+  row: number
+}
+
 type Interaction =
   | { mode: 'drag'; nodeId: string; offsetX: number; offsetY: number; moved: boolean }
   | { mode: 'pan'; startX: number; startY: number; originX: number; originY: number }
-  | { mode: 'link'; sourceId: string }
+  | { mode: 'link'; sourceId: string; kind: SetEdgeKind }
+
+interface LinkPreview {
+  sourceId: string
+  kind: SetEdgeKind
+  x: number
+  y: number
+}
 
 interface SetCanvasProps {
   nodes: SetNode[]
@@ -42,28 +61,65 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }
 
-function statusText(node: SetNode): string {
-  if (node.missing) return '已失效'
-  if (node.kind === 'carrier') return '载体'
-  if (node.status === 'confirmed') return '已确认'
-  if (node.status === 'rejected') return '已拒绝'
-  return '草稿'
+function pinsFor(node: SetNode): PinSpec[] {
+  if (node.kind === 'carrier') {
+    return [{ side: 'out', kind: 'related', type: 'data', label: '来源', row: 0 }]
+  }
+
+  return [
+    { side: 'in', kind: 'prereq', type: 'exec', label: '前置', row: 0 },
+    { side: 'out', kind: 'prereq', type: 'exec', label: '后续', row: 0 },
+    { side: 'in', kind: 'related', type: 'data', label: '相关', row: 1 },
+    { side: 'out', kind: 'related', type: 'data', label: '相关', row: 1 },
+  ]
+}
+
+function findPin(node: SetNode, side: PinSpec['side'], kind: SetEdgeKind): PinSpec | undefined {
+  return pinsFor(node).find(pin => pin.side === side && pin.kind === kind)
+}
+
+function pinAnchor(position: Position, pin: PinSpec): Position {
+  return {
+    x: position.x + (pin.side === 'out' ? NODE_WIDTH : 0),
+    y: position.y + PIN_TOP + pin.row * PIN_ROW_HEIGHT,
+  }
+}
+
+function badgeFor(node: SetNode): { text: string; tone: string } | undefined {
+  if (node.missing) return { text: '失效', tone: 'missing' }
+  if (node.kind === 'carrier') return undefined
+  if (node.status === 'confirmed') return { text: '确认', tone: 'confirmed' }
+  if (node.status === 'rejected') return { text: '拒绝', tone: 'rejected' }
+  return { text: '草稿', tone: 'draft' }
+}
+
+function FunctionIcon() {
+  return (
+    <svg className="bp-node-icon" viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M3 1.5v9M8.5 1.5v9M3 6h5.5" stroke="currentColor" strokeWidth="1.2" fill="none" />
+    </svg>
+  )
+}
+
+function BookIcon() {
+  return (
+    <svg className="bp-node-icon" viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M2 2.5h3.2c.6 0 1 .4 1 1v6.2H3.1c-.6 0-1.1-.4-1.1-1V2.5Z" fill="currentColor" opacity=".9" />
+      <path d="M10 2.5H6.8c-.6 0-1 .4-1 1v6.2h3.1c.6 0 1.1-.4 1.1-1V2.5Z" fill="currentColor" opacity=".55" />
+    </svg>
+  )
 }
 
 function edgePath(source: Position, target: Position): string {
-  const sx = source.x + NODE_WIDTH
-  const sy = source.y + NODE_HEIGHT / 2
-  const tx = target.x
-  const ty = target.y + NODE_HEIGHT / 2
-  const dx = Math.max(60, Math.abs(tx - sx) * 0.5)
+  const dx = Math.max(56, Math.abs(target.x - source.x) * 0.45)
 
-  return `M ${sx} ${sy} C ${sx + dx} ${sy}, ${tx - dx} ${ty}, ${tx} ${ty}`
+  return `M ${source.x} ${source.y} C ${source.x + dx} ${source.y}, ${target.x - dx} ${target.y}, ${target.x} ${target.y}`
 }
 
 /**
- * 专业集蓝图式画布。
+ * 专业集蓝图画布：执行引脚表达前置流程，数据引脚表达相关引用。
  *
- * 节点位置保存在数据库；画布视图固定深色以保持蓝图观感。
+ * 节点位置保存到数据库；画布固定深色以保持 UE5 蓝图观感。
  */
 export function SetCanvas({
   nodes,
@@ -77,8 +133,7 @@ export function SetCanvas({
   const [positions, setPositions] = useState<Record<string, Position>>({})
   const positionsRef = useRef<Record<string, Position>>({})
   const [view, setView] = useState<ViewState>({ x: 80, y: 60, scale: 1 })
-  const [linkKind, setLinkKind] = useState<SetEdgeKind>('prereq')
-  const [linkPreview, setLinkPreview] = useState<{ sourceId: string; x: number; y: number }>()
+  const [linkPreview, setLinkPreview] = useState<LinkPreview>()
   const [selected, setSelected] = useState<string>()
   const interactionRef = useRef<Interaction>()
   const saveRef = useRef(onSavePositions)
@@ -202,6 +257,26 @@ export function SetCanvas({
     }
   }
 
+  function nodeAt(clientX: number, clientY: number): SetNode | undefined {
+    const element = document.elementFromPoint(clientX, clientY)
+    const nodeElement = element?.closest('[data-node-id]') as HTMLElement | null
+    const nodeId = nodeElement?.dataset.nodeId
+
+    return nodeId ? nodes.find(node => node.id === nodeId) : undefined
+  }
+
+  function snapTarget(clientX: number, clientY: number, kind: SetEdgeKind, sourceId: string): Position {
+    const world = toWorld(clientX, clientY)
+    const target = nodeAt(clientX, clientY)
+    if (!target || target.id === sourceId || target.kind !== 'point') return world
+
+    const position = positionsRef.current[target.id]
+    const pin = findPin(target, 'in', kind)
+    if (!position || !pin) return world
+
+    return pinAnchor(position, pin)
+  }
+
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.button !== 0 && event.button !== 1) return
 
@@ -211,12 +286,13 @@ export function SetCanvas({
     const port = target.closest('[data-port="out"]') as HTMLElement | null
     if (port && event.button === 0) {
       const nodeId = port.dataset.nodeId
-      if (!nodeId) return
+      const edgeKind = port.dataset.edgeKind
+      if (!nodeId || (edgeKind !== 'prereq' && edgeKind !== 'related')) return
 
       setSelected(nodeId)
-      interactionRef.current = { mode: 'link', sourceId: nodeId }
+      interactionRef.current = { mode: 'link', sourceId: nodeId, kind: edgeKind }
       const world = toWorld(event.clientX, event.clientY)
-      setLinkPreview({ sourceId: nodeId, x: world.x, y: world.y })
+      setLinkPreview({ sourceId: nodeId, kind: edgeKind, x: world.x, y: world.y })
       event.currentTarget.setPointerCapture(event.pointerId)
       event.preventDefault()
       return
@@ -282,8 +358,13 @@ export function SetCanvas({
       return
     }
 
-    const world = toWorld(event.clientX, event.clientY)
-    setLinkPreview({ sourceId: interaction.sourceId, x: world.x, y: world.y })
+    const target = snapTarget(event.clientX, event.clientY, interaction.kind, interaction.sourceId)
+    setLinkPreview({
+      sourceId: interaction.sourceId,
+      kind: interaction.kind,
+      x: target.x,
+      y: target.y,
+    })
   }
 
   function handlePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
@@ -301,18 +382,16 @@ export function SetCanvas({
 
     if (interaction?.mode === 'link') {
       const sourceNode = nodes.find(node => node.id === interaction.sourceId)
-      const element = document.elementFromPoint(event.clientX, event.clientY)
-      const targetElement = element?.closest('[data-node-id]') as HTMLElement | null
-      const targetId = targetElement?.dataset.nodeId
-      const targetNode = targetId ? nodes.find(node => node.id === targetId) : undefined
+      const targetNode = nodeAt(event.clientX, event.clientY)
 
       if (
-        sourceNode?.kind === 'point'
-        && targetNode?.kind === 'point'
-        && targetId
-        && targetId !== interaction.sourceId
+        sourceNode
+        && targetNode
+        && targetNode.kind === 'point'
+        && targetNode.id !== interaction.sourceId
+        && !(interaction.kind === 'prereq' && sourceNode.kind !== 'point')
       ) {
-        void onAddEdge(interaction.sourceId, targetId, linkKind)
+        void onAddEdge(interaction.sourceId, targetNode.id, interaction.kind)
       }
     }
 
@@ -339,6 +418,10 @@ export function SetCanvas({
 
   const nodeMap = new Map(nodes.map(node => [node.id, node]))
 
+  const previewNode = linkPreview ? nodeMap.get(linkPreview.sourceId) : undefined
+  const previewPosition = linkPreview ? positions[linkPreview.sourceId] : undefined
+  const previewPin = previewNode && linkPreview ? findPin(previewNode, 'out', linkPreview.kind) : undefined
+
   return (
     <div
       className="blueprint-canvas"
@@ -358,31 +441,35 @@ export function SetCanvas({
         <svg className="blueprint-edges" width={6000} height={6000}>
           <defs>
             <marker
-              id="bp-arrow"
-              viewBox="0 0 8 8"
-              refX="7"
-              refY="4"
+              id="bp-arrow-exec"
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
               markerWidth="7"
               markerHeight="7"
               orient="auto-start-reverse"
             >
-              <path d="M 0 0 L 8 4 L 0 8 z" fill="#7fa8ff" />
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="#ededed" />
             </marker>
           </defs>
 
           {edges.map((edge) => {
-            const source = positions[edge.sourceId]
-            const target = positions[edge.targetId]
-            if (!source || !target || !nodeMap.has(edge.sourceId) || !nodeMap.has(edge.targetId)) {
-              return null
-            }
+            const sourceNode = nodeMap.get(edge.sourceId)
+            const targetNode = nodeMap.get(edge.targetId)
+            const sourcePosition = positions[edge.sourceId]
+            const targetPosition = positions[edge.targetId]
+            if (!sourceNode || !targetNode || !sourcePosition || !targetPosition) return null
+
+            const sourcePin = findPin(sourceNode, 'out', edge.kind)
+            const targetPin = findPin(targetNode, 'in', edge.kind)
+            if (!sourcePin || !targetPin) return null
 
             return (
               <path
                 key={edge.id}
                 className={`bp-edge ${edge.kind}`}
-                d={edgePath(source, target)}
-                markerEnd={edge.kind === 'prereq' ? 'url(#bp-arrow)' : undefined}
+                d={edgePath(pinAnchor(sourcePosition, sourcePin), pinAnchor(targetPosition, targetPin))}
+                markerEnd={edge.kind === 'prereq' ? 'url(#bp-arrow-exec)' : undefined}
                 onPointerDown={event => event.stopPropagation()}
                 onClick={(event) => {
                   event.stopPropagation()
@@ -392,12 +479,12 @@ export function SetCanvas({
             )
           })}
 
-          {linkPreview && positions[linkPreview.sourceId] ? (
+          {linkPreview && previewPosition && previewPin ? (
             <path
-              className="bp-edge bp-link-preview"
-              d={edgePath(positions[linkPreview.sourceId]!, {
+              className={`bp-edge bp-link-preview ${linkPreview.kind}`}
+              d={edgePath(pinAnchor(previewPosition, previewPin), {
                 x: linkPreview.x,
-                y: linkPreview.y - NODE_HEIGHT / 2,
+                y: linkPreview.y,
               })}
             />
           ) : null}
@@ -405,6 +492,7 @@ export function SetCanvas({
 
         {nodes.map((node) => {
           const position = positions[node.id] ?? { x: 0, y: 0 }
+          const badge = badgeFor(node)
 
           return (
             <div
@@ -416,47 +504,59 @@ export function SetCanvas({
               style={{ left: position.x, top: position.y }}
             >
               <div className="bp-node-header" title={node.title}>
-                {node.title}
-              </div>
-              <div className="bp-node-body">
-                <span className="bp-node-kind">{node.kind === 'point' ? '知识点' : '载体'}</span>
-                <span className="bp-node-meta">{node.subtitle ?? ''}</span>
-                <span className="bp-node-status">{statusText(node)}</span>
+                {node.kind === 'point' ? <FunctionIcon /> : <BookIcon />}
+                <span className="bp-node-title">{node.title}</span>
+                {badge ? (
+                  <span className={`bp-node-badge ${badge.tone}`}>{badge.text}</span>
+                ) : null}
+                {selected === node.id ? (
+                  <button
+                    className="bp-node-delete"
+                    type="button"
+                    aria-label={`移除 ${node.title}`}
+                    onPointerDown={event => event.stopPropagation()}
+                    onClick={() => void onRemoveNode(node.id)}
+                  >
+                    ×
+                  </button>
+                ) : null}
               </div>
 
-              {node.kind === 'point' ? (
-                <div className="bp-port in" data-port="in" data-node-id={node.id} />
-              ) : null}
-              {node.kind === 'point' ? (
-                <div className="bp-port out" data-port="out" data-node-id={node.id} />
-              ) : null}
+              <div className="bp-node-subtitle" title={node.subtitle}>
+                {node.subtitle ?? (node.kind === 'point' ? '知识点' : '载体')}
+              </div>
 
-              {selected === node.id ? (
-                <button
-                  className="bp-node-delete"
-                  type="button"
-                  aria-label={`移除 ${node.title}`}
-                  onPointerDown={event => event.stopPropagation()}
-                  onClick={() => void onRemoveNode(node.id)}
+              {pinsFor(node).map(pin => (
+                <div
+                  key={`${pin.side}-${pin.kind}`}
+                  className={`bp-pin ${pin.side} ${pin.type}`}
+                  style={{ top: HEADER_HEIGHT + SUBTITLE_HEIGHT + pin.row * PIN_ROW_HEIGHT }}
                 >
-                  ×
-                </button>
-              ) : null}
+                  <span className="bp-pin-label">{pin.label}</span>
+                  <span
+                    className="bp-pin-mark"
+                    data-port={pin.side}
+                    data-node-id={node.id}
+                    data-edge-kind={pin.kind}
+                  />
+                </div>
+              ))}
             </div>
           )
         })}
       </div>
 
       <div className="blueprint-toolbar" onPointerDown={event => event.stopPropagation()}>
-        <select
-          className="bp-select"
-          value={linkKind}
-          onChange={event => setLinkKind(event.target.value as SetEdgeKind)}
-          aria-label="新建连线类型"
-        >
-          <option value="prereq">前置</option>
-          <option value="related">相关</option>
-        </select>
+        <span className="bp-toolbar-label">蓝图</span>
+        <span className="bp-legend">
+          <i className="bp-legend-mark exec" />
+          执行
+        </span>
+        <span className="bp-legend">
+          <i className="bp-legend-mark data" />
+          数据
+        </span>
+        <span className="bp-toolbar-divider" />
         <button type="button" className="bp-button" onClick={autoLayout}>
           自动布局
         </button>
@@ -471,7 +571,7 @@ export function SetCanvas({
       ) : null}
 
       <div className="blueprint-hint">
-        拖拽节点 · 空白处平移 · 滚轮缩放 · 从右侧端口拖线
+        拖动节点 · 空白平移 · 滚轮缩放 · 从执行或数据引脚拖线
       </div>
     </div>
   )

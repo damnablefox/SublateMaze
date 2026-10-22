@@ -15,8 +15,8 @@ describe('core 专业集画布布局', () => {
 
     expect(layoutSetNodes(nodes, edges)).toEqual([
       { nodeId: 'a', x: 0, y: 0 },
-      { nodeId: 'b', x: 300, y: 0 },
-      { nodeId: 'c', x: 600, y: 0 },
+      { nodeId: 'b', x: 360, y: 0 },
+      { nodeId: 'c', x: 720, y: 0 },
     ])
   })
 

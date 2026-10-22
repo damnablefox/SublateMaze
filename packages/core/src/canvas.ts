@@ -30,7 +30,7 @@ export interface LayoutOptions {
   originY?: number
 }
 
-const DEFAULT_COLUMN_GAP = 300
+const DEFAULT_COLUMN_GAP = 360
 const DEFAULT_ROW_GAP = 132
 
 export function layoutSetNodes(

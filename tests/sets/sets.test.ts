@@ -133,7 +133,29 @@ describe('sets 插件', () => {
     expect(removed.edges).toEqual([])
   })
 
-  it('关系只能建立在知识点之间', () => {
+  it('载体可以作为相关关系的来源指向知识点', () => {
+    const { sets, carrier, points } = setup()
+    const set = sets.create({ title: '群论' })
+    const detail = sets.addNodes(set.set.id, [
+      { kind: 'point', refId: points[0]!.id },
+      { kind: 'carrier', refId: carrier.id },
+    ])
+
+    const point = detail.nodes.find(node => node.kind === 'point')!
+    const carrierNode = detail.nodes.find(node => node.kind === 'carrier')!
+
+    const withEdge = sets.addEdge(set.set.id, {
+      sourceId: carrierNode.id,
+      targetId: point.id,
+      kind: 'related',
+    })
+
+    expect(withEdge.edges).toHaveLength(1)
+    expect(withEdge.edges[0]!.sourceId).toBe(carrierNode.id)
+    expect(withEdge.edges[0]!.targetId).toBe(point.id)
+  })
+
+  it('前置关系只能从知识点出发，目标必须是知识点', () => {
     const { sets, carrier, points } = setup()
     const set = sets.create({ title: '群论' })
     const detail = sets.addNodes(set.set.id, [
@@ -148,9 +170,17 @@ describe('sets 插件', () => {
       sets.addEdge(set.set.id, {
         sourceId: carrierNode.id,
         targetId: point.id,
+        kind: 'prereq',
+      }),
+    ).toThrow('前置关系的起点必须是知识点')
+
+    expect(() =>
+      sets.addEdge(set.set.id, {
+        sourceId: point.id,
+        targetId: carrierNode.id,
         kind: 'related',
       }),
-    ).toThrow('关系只能建立在知识点之间')
+    ).toThrow('关系目标必须是知识点')
   })
 
   it('批量保存画布坐标并返回详情', () => {
