@@ -7,6 +7,7 @@ export const inject: string[] = []
 
 export type SetNodeKind = 'point' | 'carrier'
 export type SetEdgeKind = 'prereq' | 'related'
+export type SetCommentColor = 'amber' | 'blue' | 'green' | 'red'
 
 interface SetRecordLike {
   id: string
@@ -24,6 +25,8 @@ interface SetNodeLike {
   position: number
   x?: number
   y?: number
+  alias?: string
+  note?: string
   createdAt: string
   title: string
   subtitle?: string
@@ -37,6 +40,18 @@ interface SetEdgeLike {
   sourceId: string
   targetId: string
   kind: SetEdgeKind
+  createdAt: string
+}
+
+interface SetCommentLike {
+  id: string
+  setId: string
+  text: string
+  x: number
+  y: number
+  width: number
+  height: number
+  color: SetCommentColor
   createdAt: string
 }
 
@@ -54,14 +69,45 @@ interface SetStoreLike {
   list(): SetSummaryLike[]
   addNodes(setId: string, nodes: { kind: SetNodeKind; refId: string }[]): unknown[]
   removeNode(setId: string, nodeId: string): void
+  updateNode(
+    setId: string,
+    nodeId: string,
+    patch: { alias?: string | null; note?: string | null },
+  ): void
   updatePositions(setId: string, positions: { id: string; x: number; y: number }[]): void
   addEdge(
     setId: string,
     input: { sourceId: string; targetId: string; kind: SetEdgeKind },
   ): SetEdgeLike
+  updateEdge(setId: string, edgeId: string, kind: SetEdgeKind): void
   removeEdge(setId: string, edgeId: string): void
   listNodes(setId: string): SetNodeLike[]
   listEdges(setId: string): SetEdgeLike[]
+  listComments(setId: string): SetCommentLike[]
+  addComment(
+    setId: string,
+    input: {
+      x: number
+      y: number
+      width?: number
+      height?: number
+      text?: string
+      color?: SetCommentColor
+    },
+  ): SetCommentLike
+  updateComment(
+    setId: string,
+    commentId: string,
+    patch: {
+      x?: number
+      y?: number
+      width?: number
+      height?: number
+      text?: string
+      color?: SetCommentColor
+    },
+  ): void
+  removeComment(setId: string, commentId: string): void
   researchStats(setId: string): ResearchDegree
 }
 
@@ -90,6 +136,7 @@ export interface SetDetail {
   set: SetRecordLike
   nodes: SetNodeLike[]
   edges: SetEdgeLike[]
+  comments: SetCommentLike[]
   degree: ResearchDegree
 }
 
@@ -100,6 +147,35 @@ export interface SetOptions {
 
 const MAX_TITLE_LENGTH = 100
 const MAX_NODES = 500
+const MAX_COMMENTS = 200
+const MAX_ALIAS_LENGTH = 100
+const MAX_NOTE_LENGTH = 1000
+const MAX_COMMENT_TEXT = 2000
+
+function normalizeText(
+  value: string | null | undefined,
+  max: number,
+  field: string,
+): string | null | undefined {
+  if (value === undefined) return undefined
+  if (value === null) return null
+
+  const text = value.trim()
+  if ([...text].length > max) throw new Error(`${field}不能超过 ${max} 字`)
+  return text ? text : null
+}
+
+function assertCoordinate(value: number, field: string): void {
+  if (!Number.isFinite(value) || Math.abs(value) > 1_000_000) {
+    throw new Error(`${field}超出允许范围`)
+  }
+}
+
+function assertSize(value: number, min: number, max: number, field: string): void {
+  if (!Number.isFinite(value) || value < min || value > max) {
+    throw new Error(`${field}必须在 ${min}–${max} 之间`)
+  }
+}
 
 function assertTitle(title: string): void {
   if (!title) throw new Error('专业集标题不能为空')
@@ -128,6 +204,7 @@ export class SetsService {
       set,
       nodes: this.db.sets.listNodes(id),
       edges: this.db.sets.listEdges(id),
+      comments: this.db.sets.listComments(id),
       degree: this.db.sets.researchStats(id),
     }
   }
@@ -164,6 +241,21 @@ export class SetsService {
 
   removeNode(id: string, nodeId: string): SetDetail {
     this.db.sets.removeNode(id, nodeId)
+    return this.detail(id)
+  }
+
+  updateNode(
+    id: string,
+    nodeId: string,
+    patch: { alias?: string | null; note?: string | null },
+  ): SetDetail {
+    const detail = this.detail(id)
+    if (!detail.nodes.some(node => node.id === nodeId)) throw new Error('节点不存在')
+
+    this.db.sets.updateNode(id, nodeId, {
+      alias: normalizeText(patch.alias, MAX_ALIAS_LENGTH, '节点别名'),
+      note: normalizeText(patch.note, MAX_NOTE_LENGTH, '节点备注'),
+    })
     return this.detail(id)
   }
 
@@ -216,6 +308,91 @@ export class SetsService {
 
   removeEdge(id: string, edgeId: string): SetDetail {
     this.db.sets.removeEdge(id, edgeId)
+    return this.detail(id)
+  }
+
+  updateEdge(id: string, edgeId: string, kind: SetEdgeKind): SetDetail {
+    const detail = this.detail(id)
+    const edge = detail.edges.find(item => item.id === edgeId)
+    if (!edge) throw new Error('关系不存在')
+
+    const source = detail.nodes.find(node => node.id === edge.sourceId)
+    const target = detail.nodes.find(node => node.id === edge.targetId)
+    if (!source || !target) throw new Error('关系端点必须属于当前专业集')
+    if (target.kind !== 'point') throw new Error('关系目标必须是知识点')
+    if (kind === 'prereq' && source.kind !== 'point') {
+      throw new Error('前置关系的起点必须是知识点')
+    }
+
+    this.db.sets.updateEdge(id, edgeId, kind)
+    return this.detail(id)
+  }
+
+  addComment(
+    id: string,
+    input: {
+      x: number
+      y: number
+      width?: number
+      height?: number
+      text?: string
+      color?: SetCommentColor
+    },
+  ): SetDetail {
+    if (this.db.sets.listComments(id).length >= MAX_COMMENTS) {
+      throw new Error(`每个专业集最多 ${MAX_COMMENTS} 个注释`)
+    }
+
+    assertCoordinate(input.x, '注释坐标 X')
+    assertCoordinate(input.y, '注释坐标 Y')
+    if (input.width !== undefined) assertSize(input.width, 80, 1200, '注释宽度')
+    if (input.height !== undefined) assertSize(input.height, 60, 1000, '注释高度')
+
+    const text = normalizeText(input.text, MAX_COMMENT_TEXT, '注释文本')
+
+    this.db.sets.addComment(id, {
+      x: input.x,
+      y: input.y,
+      width: input.width,
+      height: input.height,
+      text: text ?? '',
+      color: input.color,
+    })
+    return this.detail(id)
+  }
+
+  updateComment(
+    id: string,
+    commentId: string,
+    patch: {
+      x?: number
+      y?: number
+      width?: number
+      height?: number
+      text?: string
+      color?: SetCommentColor
+    },
+  ): SetDetail {
+    if (patch.x !== undefined) assertCoordinate(patch.x, '注释坐标 X')
+    if (patch.y !== undefined) assertCoordinate(patch.y, '注释坐标 Y')
+    if (patch.width !== undefined) assertSize(patch.width, 80, 1200, '注释宽度')
+    if (patch.height !== undefined) assertSize(patch.height, 60, 1000, '注释高度')
+
+    const text = normalizeText(patch.text, MAX_COMMENT_TEXT, '注释文本')
+
+    this.db.sets.updateComment(id, commentId, {
+      x: patch.x,
+      y: patch.y,
+      width: patch.width,
+      height: patch.height,
+      text: text === undefined ? undefined : (text ?? ''),
+      color: patch.color,
+    })
+    return this.detail(id)
+  }
+
+  removeComment(id: string, commentId: string): SetDetail {
+    this.db.sets.removeComment(id, commentId)
     return this.detail(id)
   }
 
@@ -289,6 +466,48 @@ const EdgeInput = z.object({
   kind: z.enum(['prereq', 'related']),
 })
 
+const UpdateNodeInput = z.object({
+  id: z.string().min(1),
+  nodeId: z.string().min(1),
+  alias: z.string().max(MAX_ALIAS_LENGTH).nullable().optional(),
+  note: z.string().max(MAX_NOTE_LENGTH).nullable().optional(),
+})
+
+const UpdateEdgeInput = z.object({
+  id: z.string().min(1),
+  edgeId: z.string().min(1),
+  kind: z.enum(['prereq', 'related']),
+})
+
+const CommentColor = z.enum(['amber', 'blue', 'green', 'red'])
+const Coordinate = z.number().finite().min(-1_000_000).max(1_000_000)
+
+const AddCommentInput = z.object({
+  id: z.string().min(1),
+  x: Coordinate,
+  y: Coordinate,
+  width: z.number().finite().min(80).max(1200).optional(),
+  height: z.number().finite().min(60).max(1000).optional(),
+  text: z.string().max(MAX_COMMENT_TEXT).optional(),
+  color: CommentColor.optional(),
+})
+
+const UpdateCommentInput = z.object({
+  id: z.string().min(1),
+  commentId: z.string().min(1),
+  x: Coordinate.optional(),
+  y: Coordinate.optional(),
+  width: z.number().finite().min(80).max(1200).optional(),
+  height: z.number().finite().min(60).max(1000).optional(),
+  text: z.string().max(MAX_COMMENT_TEXT).optional(),
+  color: CommentColor.optional(),
+})
+
+const RemoveCommentInput = z.object({
+  id: z.string().min(1),
+  commentId: z.string().min(1),
+})
+
 const RemoveEdgeInput = z.object({
   id: z.string().min(1),
   edgeId: z.string().min(1),
@@ -318,6 +537,10 @@ function registerChannels(ctx: Context, sets: SetsService, ipc: IpcLike): void {
     const data = RemoveNodeInput.parse(input)
     return sets.removeNode(data.id, data.nodeId)
   })
+  register('set:update-node', (input: unknown) => {
+    const data = UpdateNodeInput.parse(input)
+    return sets.updateNode(data.id, data.nodeId, { alias: data.alias, note: data.note })
+  })
   register('set:update-positions', (input: unknown) => {
     const data = PositionsInput.parse(input)
     return sets.updatePositions(data.id, data.positions)
@@ -333,6 +556,36 @@ function registerChannels(ctx: Context, sets: SetsService, ipc: IpcLike): void {
   register('set:remove-edge', (input: unknown) => {
     const data = RemoveEdgeInput.parse(input)
     return sets.removeEdge(data.id, data.edgeId)
+  })
+  register('set:update-edge', (input: unknown) => {
+    const data = UpdateEdgeInput.parse(input)
+    return sets.updateEdge(data.id, data.edgeId, data.kind)
+  })
+  register('set:add-comment', (input: unknown) => {
+    const data = AddCommentInput.parse(input)
+    return sets.addComment(data.id, {
+      x: data.x,
+      y: data.y,
+      width: data.width,
+      height: data.height,
+      text: data.text,
+      color: data.color,
+    })
+  })
+  register('set:update-comment', (input: unknown) => {
+    const data = UpdateCommentInput.parse(input)
+    return sets.updateComment(data.id, data.commentId, {
+      x: data.x,
+      y: data.y,
+      width: data.width,
+      height: data.height,
+      text: data.text,
+      color: data.color,
+    })
+  })
+  register('set:remove-comment', (input: unknown) => {
+    const data = RemoveCommentInput.parse(input)
+    return sets.removeComment(data.id, data.commentId)
   })
   register('set:options', () => sets.options())
 

@@ -9,6 +9,7 @@ import {
 
 export type SetNodeKind = 'point' | 'carrier'
 export type SetEdgeKind = 'prereq' | 'related'
+export type SetCommentColor = 'amber' | 'blue' | 'green' | 'red'
 
 export interface SetRecord {
   id: string
@@ -26,6 +27,8 @@ export interface SetNodeRecord {
   position: number
   x?: number
   y?: number
+  alias?: string
+  note?: string
   createdAt: string
 }
 
@@ -56,6 +59,36 @@ export interface SetNodeInput {
   refId: string
 }
 
+export interface SetCommentRecord {
+  id: string
+  setId: string
+  text: string
+  x: number
+  y: number
+  width: number
+  height: number
+  color: SetCommentColor
+  createdAt: string
+}
+
+export interface SetCommentInput {
+  x: number
+  y: number
+  width?: number
+  height?: number
+  text?: string
+  color?: SetCommentColor
+}
+
+export interface SetCommentPatch {
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  text?: string
+  color?: SetCommentColor
+}
+
 interface SetRow {
   id: string
   title: string
@@ -73,6 +106,8 @@ interface NodeRow {
   created_at: string
   x: number | null
   y: number | null
+  alias: string | null
+  note: string | null
   point_title: string | null
   point_status: string | null
   point_carrier_title: string | null
@@ -100,6 +135,20 @@ interface NodeBaseRow {
   created_at: string
   x: number | null
   y: number | null
+  alias: string | null
+  note: string | null
+}
+
+interface CommentRow {
+  id: string
+  set_id: string
+  text: string
+  x: number
+  y: number
+  width: number
+  height: number
+  color: string
+  created_at: string
 }
 
 interface StatsRow {
@@ -143,6 +192,8 @@ function mapNode(row: NodeRow): SetNodeView {
       position: row.position,
       x: row.x ?? undefined,
       y: row.y ?? undefined,
+      alias: row.alias ?? undefined,
+      note: row.note ?? undefined,
       createdAt: row.created_at,
       title,
       subtitle: carrier ? `知识点 · ${carrier}` : '知识点',
@@ -162,6 +213,8 @@ function mapNode(row: NodeRow): SetNodeView {
     position: row.position,
     x: row.x ?? undefined,
     y: row.y ?? undefined,
+    alias: row.alias ?? undefined,
+    note: row.note ?? undefined,
     createdAt: row.created_at,
     title: row.carrier_title ?? '已失效的载体',
     subtitle: `${label} · ${pages} 页`,
@@ -189,6 +242,22 @@ function mapNodeBase(row: NodeBaseRow): SetNodeRecord {
     position: row.position,
     x: row.x ?? undefined,
     y: row.y ?? undefined,
+    alias: row.alias ?? undefined,
+    note: row.note ?? undefined,
+    createdAt: row.created_at,
+  }
+}
+
+function mapComment(row: CommentRow): SetCommentRecord {
+  return {
+    id: row.id,
+    setId: row.set_id,
+    text: row.text,
+    x: row.x,
+    y: row.y,
+    width: row.width,
+    height: row.height,
+    color: row.color as SetCommentColor,
     createdAt: row.created_at,
   }
 }
@@ -213,6 +282,7 @@ function toReviewState(row: StatsRow): ReviewState | undefined {
 
 const NODE_SELECT = `
   SELECT sn.id, sn.set_id, sn.kind, sn.ref_id, sn.position, sn.created_at, sn.x, sn.y,
+         sn.alias, sn.note,
          kp.title AS point_title, kp.status AS point_status,
          cp.title AS point_carrier_title,
          c2.title AS carrier_title, c2.kind AS carrier_kind, c2.page_count AS carrier_pages,
@@ -326,6 +396,23 @@ export class SetStore {
     this.db.prepare('DELETE FROM set_nodes WHERE id = ? AND set_id = ?').run(nodeId, setId)
   }
 
+  /** 更新节点别名与备注；传 null 表示清除。 */
+  updateNode(
+    setId: string,
+    nodeId: string,
+    patch: { alias?: string | null; note?: string | null },
+  ): void {
+    const current = this.findNodeById(setId, nodeId)
+    if (!current) throw new Error('节点不存在')
+
+    const alias = patch.alias === undefined ? (current.alias ?? null) : patch.alias
+    const note = patch.note === undefined ? (current.note ?? null) : patch.note
+
+    this.db
+      .prepare('UPDATE set_nodes SET alias = ?, note = ? WHERE id = ? AND set_id = ?')
+      .run(alias, note, nodeId, setId)
+  }
+
   /** 批量更新画布坐标；不属于该集合的节点被忽略。 */
   updatePositions(
     setId: string,
@@ -377,6 +464,78 @@ export class SetStore {
 
   removeEdge(setId: string, edgeId: string): void {
     this.db.prepare('DELETE FROM set_edges WHERE id = ? AND set_id = ?').run(edgeId, setId)
+  }
+
+  /** 切换关系类型；唯一约束冲突时返回「相同关系已存在」。 */
+  updateEdge(setId: string, edgeId: string, kind: SetEdgeKind): void {
+    const edge = this.findEdge(edgeId)
+    if (!edge || edge.setId !== setId) throw new Error('关系不存在')
+
+    try {
+      this.db
+        .prepare('UPDATE set_edges SET kind = ? WHERE id = ? AND set_id = ?')
+        .run(kind, edgeId, setId)
+    } catch (error) {
+      if (String(error).includes('UNIQUE')) throw new Error('相同关系已存在')
+      throw error
+    }
+  }
+
+  listComments(setId: string): SetCommentRecord[] {
+    const rows = this.db
+      .prepare('SELECT * FROM set_comments WHERE set_id = ? ORDER BY created_at')
+      .all(setId) as unknown as CommentRow[]
+    return rows.map(mapComment)
+  }
+
+  addComment(setId: string, input: SetCommentInput): SetCommentRecord {
+    if (!this.get(setId)) throw new Error(`专业集不存在：${setId}`)
+
+    const id = randomUUID()
+    this.db
+      .prepare(
+        `INSERT INTO set_comments (id, set_id, text, x, y, width, height, color, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        id,
+        setId,
+        input.text ?? '',
+        input.x,
+        input.y,
+        input.width ?? 360,
+        input.height ?? 200,
+        input.color ?? 'amber',
+        new Date().toISOString(),
+      )
+
+    return this.findComment(setId, id)!
+  }
+
+  updateComment(setId: string, commentId: string, patch: SetCommentPatch): void {
+    const current = this.findComment(setId, commentId)
+    if (!current) throw new Error('注释不存在')
+
+    this.db
+      .prepare(
+        `UPDATE set_comments
+         SET text = ?, x = ?, y = ?, width = ?, height = ?, color = ?
+         WHERE id = ? AND set_id = ?`,
+      )
+      .run(
+        patch.text ?? current.text,
+        patch.x ?? current.x,
+        patch.y ?? current.y,
+        patch.width ?? current.width,
+        patch.height ?? current.height,
+        patch.color ?? current.color,
+        commentId,
+        setId,
+      )
+  }
+
+  removeComment(setId: string, commentId: string): void {
+    this.db.prepare('DELETE FROM set_comments WHERE id = ? AND set_id = ?').run(commentId, setId)
   }
 
   listNodes(setId: string): SetNodeView[] {
@@ -435,7 +594,7 @@ export class SetStore {
   private findNode(setId: string, kind: SetNodeKind, refId: string): SetNodeRecord | undefined {
     const row = this.db
       .prepare(
-        `SELECT id, set_id, kind, ref_id, position, created_at, x, y
+        `SELECT id, set_id, kind, ref_id, position, created_at, x, y, alias, note
          FROM set_nodes WHERE set_id = ? AND kind = ? AND ref_id = ?`,
       )
       .get(setId, kind, refId) as NodeBaseRow | undefined
@@ -446,12 +605,19 @@ export class SetStore {
   private findNodeById(setId: string, nodeId: string): SetNodeRecord | undefined {
     const row = this.db
       .prepare(
-        `SELECT id, set_id, kind, ref_id, position, created_at, x, y
+        `SELECT id, set_id, kind, ref_id, position, created_at, x, y, alias, note
          FROM set_nodes WHERE set_id = ? AND id = ?`,
       )
       .get(setId, nodeId) as NodeBaseRow | undefined
 
     return row ? mapNodeBase(row) : undefined
+  }
+
+  private findComment(setId: string, commentId: string): SetCommentRecord | undefined {
+    const row = this.db
+      .prepare('SELECT * FROM set_comments WHERE set_id = ? AND id = ?')
+      .get(setId, commentId) as CommentRow | undefined
+    return row ? mapComment(row) : undefined
   }
 
   private findEdge(edgeId: string): SetEdgeRecord | undefined {

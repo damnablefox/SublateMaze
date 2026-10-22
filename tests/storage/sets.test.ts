@@ -71,10 +71,10 @@ afterEach(() => {
 })
 
 describe('storage-sqlite 专业集仓储', () => {
-  it('迁移到版本 11，创建、更新与删除集合', () => {
+  it('迁移到版本 12，创建、更新与删除集合', () => {
     const { sqlite } = setup()
 
-    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(11)
+    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(12)
 
     const set = sqlite.sets.create({ title: '线性代数', description: '本科课程' })
     expect(sqlite.sets.get(set.id)?.title).toBe('线性代数')
@@ -259,5 +259,57 @@ describe('storage-sqlite 专业集仓储', () => {
       missing: true,
     })
     expect(sqlite.sets.researchStats(set.id).totalPoints).toBe(0)
+  })
+
+  it('保存节点别名与备注，并可清除', () => {
+    const { sqlite, points } = setup()
+    const set = sqlite.sets.create({ title: '线性代数' })
+    const nodes = sqlite.sets.addNodes(set.id, [{ kind: 'point', refId: points[0]!.id }])
+    const node = nodes[0]!
+
+    sqlite.sets.updateNode(set.id, node.id, { alias: '向量空间（别名）', note: '重点' })
+    const updated = sqlite.sets.listNodes(set.id)[0]!
+    expect(updated.alias).toBe('向量空间（别名）')
+    expect(updated.note).toBe('重点')
+
+    sqlite.sets.updateNode(set.id, node.id, { alias: null, note: null })
+    const cleared = sqlite.sets.listNodes(set.id)[0]!
+    expect(cleared.alias).toBeUndefined()
+    expect(cleared.note).toBeUndefined()
+  })
+
+  it('新增、更新与删除注释', () => {
+    const { sqlite } = setup()
+    const set = sqlite.sets.create({ title: '线性代数' })
+    const comment = sqlite.sets.addComment(set.id, { x: 10, y: 20, text: '第一章' })
+
+    expect(sqlite.sets.listComments(set.id)).toHaveLength(1)
+    expect(comment.text).toBe('第一章')
+
+    sqlite.sets.updateComment(set.id, comment.id, { x: 30, width: 400, color: 'blue' })
+    const updated = sqlite.sets.listComments(set.id)[0]!
+    expect(updated.x).toBe(30)
+    expect(updated.width).toBe(400)
+    expect(updated.color).toBe('blue')
+
+    sqlite.sets.removeComment(set.id, comment.id)
+    expect(sqlite.sets.listComments(set.id)).toEqual([])
+  })
+
+  it('切换关系类型', () => {
+    const { sqlite, points } = setup()
+    const set = sqlite.sets.create({ title: '线性代数' })
+    const nodes = sqlite.sets.addNodes(set.id, [
+      { kind: 'point', refId: points[0]!.id },
+      { kind: 'point', refId: points[1]!.id },
+    ])
+
+    const edge = sqlite.sets.addEdge(set.id, {
+      sourceId: nodes[0]!.id,
+      targetId: nodes[1]!.id,
+      kind: 'prereq',
+    })
+    sqlite.sets.updateEdge(set.id, edge.id, 'related')
+    expect(sqlite.sets.listEdges(set.id)[0]!.kind).toBe('related')
   })
 })

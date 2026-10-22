@@ -58,7 +58,7 @@ export function SetsPage() {
   const [detail, setDetail] = useState<SetDetail>()
   const [form, setForm] = useState({ title: '', description: '' })
   const [dirty, setDirty] = useState(false)
-  const [viewMode, setViewMode] = useState<'list' | 'canvas'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'canvas'>('canvas')
   const [newTitle, setNewTitle] = useState('')
   const [addValue, setAddValue] = useState('')
   const [edge, setEdge] = useState<EdgeDraft>(EMPTY_EDGE)
@@ -235,6 +235,83 @@ export function SetsPage() {
     } catch (reason) {
       setError(`保存画布位置失败：${errorText(reason)}`)
     }
+  }
+
+  async function addCanvasNode(
+    kind: SetNodeKind,
+    refId: string,
+    position: { x: number; y: number },
+  ) {
+    if (!selectedId) return
+
+    try {
+      setBusy(true)
+      setError(undefined)
+      setMessage(undefined)
+      let next = await window.sublate.sets.addNodes(selectedId, [{ kind, refId }])
+      const added = next.nodes.find(node => node.kind === kind && node.refId === refId)
+
+      if (added && added.x === undefined && added.y === undefined) {
+        next = await window.sublate.sets.updatePositions(selectedId, [
+          { nodeId: added.id, x: position.x, y: position.y },
+        ])
+      }
+
+      applyDetail(next)
+      setMessage('已加入节点')
+      await refreshSets()
+    } catch (reason) {
+      setError(`添加节点失败：${errorText(reason)}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function updateCanvasNode(
+    nodeId: string,
+    patch: { alias?: string | null; note?: string | null },
+  ) {
+    if (!selectedId) return
+    await run(() => window.sublate.sets.updateNode(selectedId, nodeId, patch), '已更新节点')
+  }
+
+  async function updateCanvasEdge(edgeId: string, kind: SetEdgeKind) {
+    if (!selectedId) return
+    await run(() => window.sublate.sets.updateEdge(selectedId, edgeId, kind), '已更新关系')
+  }
+
+  async function addCanvasComment(position: { x: number; y: number }) {
+    if (!selectedId) return
+    await run(
+      () => window.sublate.sets.addComment(selectedId, { x: position.x, y: position.y }),
+      '已添加注释',
+    )
+  }
+
+  async function updateCanvasComment(
+    commentId: string,
+    patch: {
+      x?: number
+      y?: number
+      width?: number
+      height?: number
+      text?: string
+      color?: 'amber' | 'blue' | 'green' | 'red'
+    },
+  ) {
+    if (!selectedId) return
+
+    try {
+      setDetail(await window.sublate.sets.updateComment(selectedId, commentId, patch))
+      setError(undefined)
+    } catch (reason) {
+      setError(`保存注释失败：${errorText(reason)}`)
+    }
+  }
+
+  async function removeCanvasComment(commentId: string) {
+    if (!selectedId) return
+    await run(() => window.sublate.sets.removeComment(selectedId, commentId), '已删除注释')
   }
 
   async function addCanvasEdge(sourceId: string, targetId: string, kind: SetEdgeKind) {
@@ -472,10 +549,18 @@ export function SetsPage() {
                     <SetCanvas
                       nodes={detail.nodes}
                       edges={detail.edges}
+                      comments={detail.comments}
+                      options={options}
                       onSavePositions={savePositions}
-                      onAddEdge={addCanvasEdge}
-                      onRemoveEdge={removeEdge}
+                      onAddNode={addCanvasNode}
                       onRemoveNode={removeNode}
+                      onUpdateNode={updateCanvasNode}
+                      onAddEdge={addCanvasEdge}
+                      onUpdateEdge={updateCanvasEdge}
+                      onRemoveEdge={removeEdge}
+                      onAddComment={addCanvasComment}
+                      onUpdateComment={updateCanvasComment}
+                      onRemoveComment={removeCanvasComment}
                     />
                     {addNodeBar}
                   </>

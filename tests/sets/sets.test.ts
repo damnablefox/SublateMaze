@@ -242,4 +242,79 @@ describe('sets 插件', () => {
     expect(detail.degree.score).toBeCloseTo(0.4)
     expect(detail.degree.level).toBe('进阶')
   })
+
+  it('编辑节点别名与备注并校验长度', () => {
+    const { sets, points } = setup()
+    const set = sets.create({ title: '群论' })
+    const detail = sets.addNodes(set.set.id, [{ kind: 'point', refId: points[0]!.id }])
+    const node = detail.nodes[0]!
+
+    const updated = sets.updateNode(set.set.id, node.id, {
+      alias: ' 群的定义（别名） ',
+      note: '备注',
+    })
+    expect(updated.nodes[0]!.alias).toBe('群的定义（别名）')
+    expect(updated.nodes[0]!.note).toBe('备注')
+
+    const cleared = sets.updateNode(set.set.id, node.id, { alias: '', note: '' })
+    expect(cleared.nodes[0]!.alias).toBeUndefined()
+
+    expect(() => sets.updateNode(set.set.id, node.id, { alias: 'x'.repeat(101) }))
+      .toThrow('节点别名不能超过 100 字')
+  })
+
+  it('新增注释并校验坐标与尺寸', () => {
+    const { sets } = setup()
+    const set = sets.create({ title: '群论' })
+
+    const added = sets.addComment(set.set.id, { x: 10, y: 20, text: '第一章' })
+    expect(added.comments).toHaveLength(1)
+
+    const updated = sets.updateComment(set.set.id, added.comments[0]!.id, {
+      x: 30,
+      width: 420,
+      color: 'green',
+    })
+    expect(updated.comments[0]!.width).toBe(420)
+    expect(updated.comments[0]!.color).toBe('green')
+
+    expect(() => sets.addComment(set.set.id, { x: 0, y: 0, width: 20 }))
+      .toThrow('注释宽度必须在 80–1200 之间')
+
+    const removed = sets.removeComment(set.set.id, added.comments[0]!.id)
+    expect(removed.comments).toEqual([])
+  })
+
+  it('切换关系类型并校验端点规则', () => {
+    const { sets, carrier, points } = setup()
+    const set = sets.create({ title: '群论' })
+    const detail = sets.addNodes(set.set.id, [
+      { kind: 'point', refId: points[0]!.id },
+      { kind: 'point', refId: points[1]!.id },
+      { kind: 'carrier', refId: carrier.id },
+    ])
+    const first = detail.nodes.find(node => node.kind === 'point' && node.refId === points[0]!.id)!
+    const second = detail.nodes.find(node => node.kind === 'point' && node.refId === points[1]!.id)!
+    const carrierNode = detail.nodes.find(node => node.kind === 'carrier')!
+
+    const withEdge = sets.addEdge(set.set.id, {
+      sourceId: first.id,
+      targetId: second.id,
+      kind: 'prereq',
+    })
+    const updated = sets.updateEdge(set.set.id, withEdge.edges[0]!.id, 'related')
+    expect(updated.edges[0]!.kind).toBe('related')
+
+    const withCarrierEdge = sets.addEdge(set.set.id, {
+      sourceId: carrierNode.id,
+      targetId: first.id,
+      kind: 'related',
+    })
+    const carrierEdge = withCarrierEdge.edges.find(
+      item => item.sourceId === carrierNode.id,
+    )!
+
+    expect(() => sets.updateEdge(set.set.id, carrierEdge.id, 'prereq'))
+      .toThrow('前置关系的起点必须是知识点')
+  })
 })

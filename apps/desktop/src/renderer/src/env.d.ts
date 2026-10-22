@@ -433,6 +433,7 @@ export interface ResearchDegree {
 
 export type SetNodeKind = 'point' | 'carrier'
 export type SetEdgeKind = 'prereq' | 'related'
+export type SetCommentColor = 'amber' | 'blue' | 'green' | 'red'
 
 export interface SetRecord {
   id: string
@@ -450,6 +451,8 @@ export interface SetNode {
   position: number
   x?: number
   y?: number
+  alias?: string
+  note?: string
   createdAt: string
   title: string
   subtitle?: string
@@ -466,6 +469,18 @@ export interface SetEdge {
   createdAt: string
 }
 
+export interface SetComment {
+  id: string
+  setId: string
+  text: string
+  x: number
+  y: number
+  width: number
+  height: number
+  color: SetCommentColor
+  createdAt: string
+}
+
 export interface SetSummary extends SetRecord {
   nodeCount: number
   pointCount: number
@@ -476,6 +491,7 @@ export interface SetDetail {
   set: SetRecord
   nodes: SetNode[]
   edges: SetEdge[]
+  comments: SetComment[]
   degree: ResearchDegree
 }
 
@@ -596,6 +612,11 @@ declare global {
           nodes: { kind: SetNodeKind; refId: string }[],
         ): Promise<SetDetail>
         removeNode(id: string, nodeId: string): Promise<SetDetail>
+        updateNode(
+          id: string,
+          nodeId: string,
+          patch: { alias?: string | null; note?: string | null },
+        ): Promise<SetDetail>
         updatePositions(
           id: string,
           positions: { nodeId: string; x: number; y: number }[],
@@ -604,7 +625,32 @@ declare global {
           id: string,
           input: { sourceId: string; targetId: string; kind: SetEdgeKind },
         ): Promise<SetDetail>
+        updateEdge(id: string, edgeId: string, kind: SetEdgeKind): Promise<SetDetail>
         removeEdge(id: string, edgeId: string): Promise<SetDetail>
+        addComment(
+          id: string,
+          input: {
+            x: number
+            y: number
+            width?: number
+            height?: number
+            text?: string
+            color?: SetCommentColor
+          },
+        ): Promise<SetDetail>
+        updateComment(
+          id: string,
+          commentId: string,
+          patch: {
+            x?: number
+            y?: number
+            width?: number
+            height?: number
+            text?: string
+            color?: SetCommentColor
+          },
+        ): Promise<SetDetail>
+        removeComment(id: string, commentId: string): Promise<SetDetail>
         options(): Promise<SetOptions>
       }
     }

@@ -2338,7 +2338,7 @@
 
 .blueprint-canvas {
   position: relative;
-  height: 560px;
+  height: clamp(560px, calc(100vh - 300px), 900px);
   overflow: hidden;
   border: 1px solid #383838;
   border-radius: 3px;
@@ -2556,24 +2556,43 @@
 .bp-pin-mark {
   position: absolute;
   top: 50%;
+  width: 9px;
+  height: 9px;
   transform: translateY(-50%);
   cursor: crosshair;
 }
 
+.bp-pin-mark::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 2px;
+  transform: translateY(-50%);
+  background: inherit;
+  opacity: 0.9;
+}
+
 .bp-pin.in .bp-pin-mark {
-  left: -7px;
+  left: -14px;
 }
 
 .bp-pin.out .bp-pin-mark {
-  right: -7px;
+  right: -14px;
+}
+
+.bp-pin.in .bp-pin-mark::before {
+  left: 100%;
+}
+
+.bp-pin.out .bp-pin-mark::before {
+  right: 100%;
 }
 
 .bp-pin.data .bp-pin-mark {
-  width: 8px;
-  height: 8px;
   border-radius: 50%;
   background: #00aaff;
-  box-shadow: 0 0 0 1px #1a1a1a;
+  box-shadow: 0 0 0 1px #101010;
 }
 
 .bp-node.carrier .bp-pin.data .bp-pin-mark {
@@ -2581,11 +2600,9 @@
 }
 
 .bp-pin.exec .bp-pin-mark {
-  width: 0;
-  height: 0;
-  border-left: 9px solid #ededed;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
+  border-radius: 1px;
+  background: #ededed;
+  box-shadow: 0 0 0 1px #101010;
 }
 
 .bp-node:hover .bp-pin.out .bp-pin-mark,
@@ -2616,8 +2633,10 @@
   right: 10px;
   top: 10px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  max-width: calc(100% - 20px);
   padding: 4px 6px;
   border: 1px solid #3a3a3a;
   border-radius: 3px;
@@ -2684,6 +2703,382 @@
   font-size: 10px;
   color: #9a9a9a;
   text-align: right;
+}
+
+/* 注释框 */
+
+.bp-comment {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(240, 170, 32, 0.55);
+  border-radius: 3px;
+  background: rgba(240, 170, 32, 0.08);
+  color: #e8e8e8;
+  pointer-events: none;
+  --bp-comment-accent: #f0d58a;
+}
+
+.bp-comment.selected {
+  box-shadow: 0 0 0 1px #f0a020;
+}
+
+.bp-comment.blue {
+  border-color: rgba(0, 170, 255, 0.5);
+  background: rgba(0, 170, 255, 0.07);
+  --bp-comment-accent: #8fd8ff;
+}
+
+.bp-comment.green {
+  border-color: rgba(57, 211, 83, 0.5);
+  background: rgba(57, 211, 83, 0.07);
+  --bp-comment-accent: #93d99b;
+}
+
+.bp-comment.red {
+  border-color: rgba(220, 70, 70, 0.55);
+  background: rgba(220, 70, 70, 0.08);
+  --bp-comment-accent: #f1a1a1;
+}
+
+.bp-comment-head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+  padding: 0 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: grab;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.bp-comment-title {
+  color: var(--bp-comment-accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.bp-comment-hint {
+  color: rgba(255, 255, 255, 0.32);
+  font-size: 9px;
+}
+
+.bp-comment-text {
+  flex: 1;
+  padding: 8px 10px;
+  overflow: auto;
+  color: #d8d8d8;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  cursor: text;
+  pointer-events: none;
+}
+
+.bp-comment-textarea {
+  flex: 1;
+  margin: 6px 8px;
+  padding: 6px;
+  border: 1px solid #4a4a4a;
+  border-radius: 2px;
+  outline: none;
+  background: #1b1b1b;
+  color: #ededed;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.5;
+  pointer-events: auto;
+  resize: none;
+}
+
+.bp-comment-resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.45) 50%);
+  cursor: nwse-resize;
+  opacity: 0.55;
+  pointer-events: auto;
+}
+
+/* 右键菜单 */
+
+.bp-menu {
+  position: fixed;
+  z-index: 30;
+  min-width: 208px;
+  padding: 5px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  background: #202020;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6);
+  animation: bp-menu-in 110ms ease-out;
+}
+
+@keyframes bp-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.bp-menu-title {
+  display: block;
+  padding: 5px 8px 3px;
+  overflow: hidden;
+  color: #8a8a8a;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bp-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 26px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #dedede;
+  font-family: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bp-menu-item:hover {
+  background: #2d2d2d;
+}
+
+.bp-menu-item.danger {
+  color: #f1a1a1;
+}
+
+.bp-menu-item.danger:hover {
+  background: rgba(220, 70, 70, 0.18);
+}
+
+.bp-menu-sep {
+  display: block;
+  height: 1px;
+  margin: 4px 6px;
+  background: #343434;
+}
+
+.bp-menu-colors {
+  display: flex;
+  gap: 6px;
+  padding: 4px 8px 6px;
+}
+
+.bp-color-swatch {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.bp-color-swatch.amber {
+  background: #d99b20;
+}
+
+.bp-color-swatch.blue {
+  background: #00aaff;
+}
+
+.bp-color-swatch.green {
+  background: #39d353;
+}
+
+.bp-color-swatch.red {
+  background: #dc4646;
+}
+
+.bp-color-swatch.active {
+  box-shadow: 0 0 0 1px #fff;
+}
+
+/* 弹层 */
+
+.bp-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.bp-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 420px;
+  max-width: calc(100% - 32px);
+  max-height: calc(100% - 40px);
+  padding: 12px;
+  overflow: auto;
+  border: 1px solid #3f3f3f;
+  border-radius: 6px;
+  background: #222;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+  color: #ededed;
+}
+
+.bp-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.bp-dialog-close {
+  border: 0;
+  background: transparent;
+  color: #b0b0b0;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.bp-dialog-close:hover {
+  color: #ffffff;
+}
+
+.bp-input {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  outline: none;
+  background: #1b1b1b;
+  color: #ededed;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.bp-input:focus {
+  border-color: #f0a020;
+}
+
+.bp-textarea {
+  height: auto;
+  padding: 6px 8px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.bp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+  color: #a8a8a8;
+  font-size: 10px;
+}
+
+.bp-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  margin-top: 8px;
+  overflow: auto;
+}
+
+.bp-picker-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #dedede;
+  font-family: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bp-picker-item:hover {
+  background: #2e2e2e;
+}
+
+.bp-picker-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bp-picker-meta {
+  flex: none;
+  color: #8f8f8f;
+  font-size: 9px;
+}
+
+.bp-picker-empty {
+  margin: 10px 0;
+  color: #8f8f8f;
+  font-size: 11px;
+  text-align: center;
+}
+
+.bp-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.bp-dialog-spacer {
+  flex: 1;
+}
+
+.bp-button.primary {
+  border-color: #f0a020;
+  background: #f0a020;
+  color: #1b1b1b;
+  font-weight: 600;
+}
+
+.bp-button.primary:hover {
+  border-color: #ffb84d;
+  background: #ffb84d;
+}
+
+.bp-button.danger {
+  border-color: #5a3333;
+  background: rgba(220, 70, 70, 0.12);
+  color: #f1a1a1;
+}
+
+.bp-button.danger:hover {
+  background: rgba(220, 70, 70, 0.22);
 }
 
 .blueprint-hint {

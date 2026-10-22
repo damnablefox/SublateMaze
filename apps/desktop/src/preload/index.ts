@@ -128,6 +128,11 @@ contextBridge.exposeInMainWorld('sublate', {
       ipcRenderer.invoke('set:add-nodes', { id, nodes }),
     removeNode: (id: string, nodeId: string) =>
       ipcRenderer.invoke('set:remove-node', { id, nodeId }),
+    updateNode: (
+      id: string,
+      nodeId: string,
+      patch: { alias?: string | null; note?: string | null },
+    ) => ipcRenderer.invoke('set:update-node', { id, nodeId, ...patch }),
     updatePositions: (
       id: string,
       positions: { nodeId: string; x: number; y: number }[],
@@ -136,8 +141,35 @@ contextBridge.exposeInMainWorld('sublate', {
       id: string,
       input: { sourceId: string; targetId: string; kind: 'prereq' | 'related' },
     ) => ipcRenderer.invoke('set:add-edge', { id, ...input }),
+    updateEdge: (id: string, edgeId: string, kind: 'prereq' | 'related') =>
+      ipcRenderer.invoke('set:update-edge', { id, edgeId, kind }),
     removeEdge: (id: string, edgeId: string) =>
       ipcRenderer.invoke('set:remove-edge', { id, edgeId }),
+    addComment: (
+      id: string,
+      input: {
+        x: number
+        y: number
+        width?: number
+        height?: number
+        text?: string
+        color?: 'amber' | 'blue' | 'green' | 'red'
+      },
+    ) => ipcRenderer.invoke('set:add-comment', { id, ...input }),
+    updateComment: (
+      id: string,
+      commentId: string,
+      patch: {
+        x?: number
+        y?: number
+        width?: number
+        height?: number
+        text?: string
+        color?: 'amber' | 'blue' | 'green' | 'red'
+      },
+    ) => ipcRenderer.invoke('set:update-comment', { id, commentId, ...patch }),
+    removeComment: (id: string, commentId: string) =>
+      ipcRenderer.invoke('set:remove-comment', { id, commentId }),
     options: () => ipcRenderer.invoke('set:options', {}),
   },
 })

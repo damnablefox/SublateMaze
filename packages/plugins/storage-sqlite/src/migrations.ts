@@ -377,3 +377,23 @@ export const MIGRATION_011 = `
 ALTER TABLE set_nodes ADD COLUMN x REAL;
 ALTER TABLE set_nodes ADD COLUMN y REAL;
 `
+
+/** 迁移 012：专业集节点别名/备注与注释框。 */
+export const MIGRATION_012 = `
+ALTER TABLE set_nodes ADD COLUMN alias TEXT;
+ALTER TABLE set_nodes ADD COLUMN note TEXT;
+
+CREATE TABLE IF NOT EXISTS set_comments (
+  id TEXT PRIMARY KEY,
+  set_id TEXT NOT NULL REFERENCES sets (id) ON DELETE CASCADE,
+  text TEXT NOT NULL DEFAULT '',
+  x REAL NOT NULL,
+  y REAL NOT NULL,
+  width REAL NOT NULL DEFAULT 360,
+  height REAL NOT NULL DEFAULT 200,
+  color TEXT NOT NULL DEFAULT 'amber',
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_set_comments_set ON set_comments (set_id);
+`
