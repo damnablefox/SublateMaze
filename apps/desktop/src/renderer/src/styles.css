@@ -2325,3 +2325,280 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
+
+/* ---------- 专业集蓝图画布 ---------- */
+
+.sets-view-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+}
+
+.blueprint-canvas {
+  position: relative;
+  height: 500px;
+  overflow: hidden;
+  border: 0.5px solid #323744;
+  border-radius: var(--radius-lg);
+  background: #14161a;
+  color: #e7eaf0;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.sets-canvas-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.blueprint-canvas:active {
+  cursor: grabbing;
+}
+
+.blueprint-transform {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+
+.blueprint-grid {
+  position: absolute;
+  left: -2000px;
+  top: -2000px;
+  width: 6000px;
+  height: 6000px;
+  background-color: #14161a;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+  background-size: 32px 32px, 32px 32px, 160px 160px, 160px 160px;
+}
+
+.blueprint-edges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.bp-edge {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.bp-edge.prereq {
+  stroke: #7fa8ff;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.bp-edge.related {
+  stroke: #8c93a3;
+  stroke-dasharray: 6 5;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.bp-edge:hover {
+  stroke: #c4d4ff;
+}
+
+.bp-link-preview {
+  stroke: #c4d4ff;
+  stroke-dasharray: 5 4;
+  pointer-events: none;
+}
+
+.bp-node {
+  position: absolute;
+  width: 240px;
+  height: 96px;
+  border: 1px solid #3a3f49;
+  border-radius: 8px;
+  background: #1d2026;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: grab;
+}
+
+.bp-node.selected {
+  border-color: #5b8dff;
+  box-shadow: 0 0 0 1px #5b8dff, 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.bp-node.missing {
+  border-style: dashed;
+  opacity: 0.65;
+}
+
+.bp-node-header {
+  height: 28px;
+  padding: 0 10px;
+  overflow: hidden;
+  border-radius: 7px 7px 0 0;
+  background: #253044;
+  color: #dbe6ff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 28px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.bp-node.carrier .bp-node-header {
+  background: #3a2b4d;
+  color: #e9ddff;
+}
+
+.bp-node-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 10px;
+}
+
+.bp-node-kind {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9aa4b5;
+}
+
+.bp-node-meta {
+  overflow: hidden;
+  font-size: 11px;
+  color: #c3cad6;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.bp-node-status {
+  font-size: 10px;
+  color: #7fa8ff;
+}
+
+.bp-port {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #14161a;
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+
+.bp-port.in {
+  left: -6px;
+  background: #9aa4b5;
+}
+
+.bp-port.out {
+  right: -6px;
+  background: #7fa8ff;
+  cursor: crosshair;
+}
+
+.bp-node:hover .bp-port.out,
+.bp-node.selected .bp-port.out {
+  background: #c4d4ff;
+}
+
+.bp-node-delete {
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #4a4f5b;
+  border-radius: 999px;
+  background: #2b2f38;
+  color: #e7eaf0;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.bp-node-delete:hover {
+  background: #3b404c;
+}
+
+.blueprint-toolbar {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border: 1px solid #333842;
+  border-radius: 8px;
+  background: rgba(20, 22, 26, 0.88);
+  backdrop-filter: blur(6px);
+  z-index: 5;
+}
+
+.bp-select,
+.bp-button {
+  height: 25px;
+  padding: 0 8px;
+  border: 1px solid #3b414d;
+  border-radius: 6px;
+  background: #23262c;
+  color: #dbe1ea;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.bp-select {
+  padding: 0 6px;
+}
+
+.bp-button:hover,
+.bp-select:hover {
+  border-color: #596172;
+  background: #2c3038;
+}
+
+.bp-zoom {
+  min-width: 38px;
+  font-family: var(--font-code);
+  font-size: 10px;
+  color: #8f98a8;
+  text-align: right;
+}
+
+.blueprint-hint {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  font-size: 10px;
+  color: #7f8794;
+  pointer-events: none;
+}
+
+.blueprint-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #8a93a2;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+@media (max-width: 1080px) {
+  .blueprint-canvas {
+    height: 420px;
+  }
+}

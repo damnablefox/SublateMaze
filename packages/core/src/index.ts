@@ -8,6 +8,7 @@
 export const CORE_VERSION = '0.1.0'
 
 export * from './budget.ts'
+export * from './canvas.ts'
 export * from './library.ts'
 export * from './notes.ts'
 export * from './plan.ts'

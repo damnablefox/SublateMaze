@@ -128,6 +128,10 @@ contextBridge.exposeInMainWorld('sublate', {
       ipcRenderer.invoke('set:add-nodes', { id, nodes }),
     removeNode: (id: string, nodeId: string) =>
       ipcRenderer.invoke('set:remove-node', { id, nodeId }),
+    updatePositions: (
+      id: string,
+      positions: { nodeId: string; x: number; y: number }[],
+    ) => ipcRenderer.invoke('set:update-positions', { id, positions }),
     addEdge: (
       id: string,
       input: { sourceId: string; targetId: string; kind: 'prereq' | 'related' },

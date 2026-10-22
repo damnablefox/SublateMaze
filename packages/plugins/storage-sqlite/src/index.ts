@@ -21,6 +21,7 @@ import {
   MIGRATION_008,
   MIGRATION_009,
   MIGRATION_010,
+  MIGRATION_011,
 } from './migrations.ts'
 import { NoteStore } from './notes.ts'
 import { PlanStore } from './plans.ts'
@@ -105,6 +106,7 @@ export class SqliteService {
     if (version < 8) this.runMigration(MIGRATION_008, 8)
     if (version < 9) this.runMigration(MIGRATION_009, 9)
     if (version < 10) this.runMigration(MIGRATION_010, 10)
+    if (version < 11) this.runMigration(MIGRATION_011, 11)
   }
 
   private runMigration(sql: string, targetVersion: number): void {

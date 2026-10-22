@@ -71,10 +71,10 @@ afterEach(() => {
 })
 
 describe('storage-sqlite 专业集仓储', () => {
-  it('迁移到版本 10，创建、更新与删除集合', () => {
+  it('迁移到版本 11，创建、更新与删除集合', () => {
     const { sqlite } = setup()
 
-    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(10)
+    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(11)
 
     const set = sqlite.sets.create({ title: '线性代数', description: '本科课程' })
     expect(sqlite.sets.get(set.id)?.title).toBe('线性代数')
@@ -204,6 +204,33 @@ describe('storage-sqlite 专业集仓储', () => {
 
     expect(sqlite.sets.listEdges(set.id)).toEqual([])
     expect(sqlite.sets.countNodes(set.id)).toBe(1)
+  })
+
+  it('保存节点画布坐标，且不影响其他集合', () => {
+    const { sqlite, points } = setup()
+    const set = sqlite.sets.create({ title: '代数' })
+    const other = sqlite.sets.create({ title: '几何' })
+
+    const [first] = sqlite.sets.addNodes(set.id, [{ kind: 'point', refId: points[0]!.id }])
+    const [second] = sqlite.sets.addNodes(set.id, [{ kind: 'point', refId: points[1]!.id }])
+    const [otherNode] = sqlite.sets.addNodes(other.id, [{ kind: 'point', refId: points[2]!.id }])
+
+    expect(first!.x).toBeUndefined()
+
+    sqlite.sets.updatePositions(set.id, [
+      { id: first!.id, x: 120, y: 240 },
+      { id: second!.id, x: 360, y: 60 },
+      { id: otherNode!.id, x: 999, y: 999 },
+    ])
+
+    const nodes = sqlite.sets.listNodes(set.id)
+    expect(nodes.map(node => [node.id, node.x, node.y])).toEqual([
+      [first!.id, 120, 240],
+      [second!.id, 360, 60],
+    ])
+    const otherNodes = sqlite.sets.listNodes(other.id)
+    expect(otherNodes[0]?.x).toBeUndefined()
+    expect(otherNodes[0]?.y).toBeUndefined()
   })
 
   it('知识点被删除后节点标记缺失且不计入统计', () => {

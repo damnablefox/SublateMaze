@@ -448,6 +448,8 @@ export interface SetNode {
   kind: SetNodeKind
   refId: string
   position: number
+  x?: number
+  y?: number
   createdAt: string
   title: string
   subtitle?: string
@@ -594,6 +596,10 @@ declare global {
           nodes: { kind: SetNodeKind; refId: string }[],
         ): Promise<SetDetail>
         removeNode(id: string, nodeId: string): Promise<SetDetail>
+        updatePositions(
+          id: string,
+          positions: { nodeId: string; x: number; y: number }[],
+        ): Promise<SetDetail>
         addEdge(
           id: string,
           input: { sourceId: string; targetId: string; kind: SetEdgeKind },

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { PlusIcon } from '../components/icons'
+import { SetCanvas } from '../components/SetCanvas'
 import type {
   SetDetail,
   SetEdge,
@@ -57,6 +58,7 @@ export function SetsPage() {
   const [detail, setDetail] = useState<SetDetail>()
   const [form, setForm] = useState({ title: '', description: '' })
   const [dirty, setDirty] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'canvas'>('list')
   const [newTitle, setNewTitle] = useState('')
   const [addValue, setAddValue] = useState('')
   const [edge, setEdge] = useState<EdgeDraft>(EMPTY_EDGE)
@@ -224,6 +226,25 @@ export function SetsPage() {
     await run(() => window.sublate.sets.removeNode(selectedId, nodeId), '已移除节点')
   }
 
+  async function savePositions(positions: { nodeId: string; x: number; y: number }[]) {
+    if (!selectedId) return
+
+    try {
+      setDetail(await window.sublate.sets.updatePositions(selectedId, positions))
+      setError(undefined)
+    } catch (reason) {
+      setError(`保存画布位置失败：${errorText(reason)}`)
+    }
+  }
+
+  async function addCanvasEdge(sourceId: string, targetId: string, kind: SetEdgeKind) {
+    if (!selectedId) return
+    await run(
+      () => window.sublate.sets.addEdge(selectedId, { sourceId, targetId, kind }),
+      '已添加关系',
+    )
+  }
+
   async function addEdge() {
     if (!selectedId || !edge.sourceId || !edge.targetId) return
     if (edge.sourceId === edge.targetId) {
@@ -258,6 +279,41 @@ export function SetsPage() {
 
   const relationNodes = detail?.nodes.filter(node => node.kind === 'point') ?? []
 
+  const addNodeBar = (
+    <div className="sets-add">
+      <select
+        className="select"
+        value={addValue}
+        onChange={event => setAddValue(event.target.value)}
+        aria-label="选择要加入的节点"
+      >
+        <option value="">选择知识点或载体…</option>
+        <optgroup label="载体">
+          {options.carriers.map(carrier => (
+            <option key={carrier.id} value={`carrier:${carrier.id}`}>
+              {carrier.title}
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="知识点">
+          {options.points.map(point => (
+            <option key={point.id} value={`point:${point.id}`}>
+              {point.title} · {point.carrierTitle}
+            </option>
+          ))}
+        </optgroup>
+      </select>
+      <button
+        className="button sm"
+        type="button"
+        onClick={() => void addNode()}
+        disabled={busy || !addValue}
+      >
+        添加
+      </button>
+    </div>
+  )
+
   return (
     <div className="page">
       <div className="page-inner sets-page-inner">
@@ -269,6 +325,22 @@ export function SetsPage() {
 
           {detail ? (
             <div className="actions">
+              <div className="sets-view-switch" role="group" aria-label="专业集视图">
+                <button
+                  type="button"
+                  className={`button sm${viewMode === 'list' ? ' primary' : ' ghost'}`}
+                  onClick={() => setViewMode('list')}
+                >
+                  列表
+                </button>
+                <button
+                  type="button"
+                  className={`button sm${viewMode === 'canvas' ? ' primary' : ' ghost'}`}
+                  onClick={() => setViewMode('canvas')}
+                >
+                  画布
+                </button>
+              </div>
               {dirty ? <span className="note-dirty">未保存</span> : null}
               <button
                 className="button sm primary"
@@ -361,186 +433,177 @@ export function SetsPage() {
                   />
                 </div>
 
-                <div className="research-card">
-                  <div className="research-score">
-                    <div className="research-number">
-                      <span className="research-value">{percent(detail.degree.score)}</span>
-                      <span className="research-unit">%</span>
+                {viewMode === 'list' ? (
+                  <div className="research-card">
+                    <div className="research-score">
+                      <div className="research-number">
+                        <span className="research-value">{percent(detail.degree.score)}</span>
+                        <span className="research-unit">%</span>
+                      </div>
+                      <span className="tag tone-outline">{detail.degree.level}</span>
                     </div>
-                    <span className="tag tone-outline">{detail.degree.level}</span>
-                  </div>
 
-                  <div className="research-bars">
-                    <ResearchBar
-                      label="广度"
-                      value={detail.degree.breadth}
-                      hint={`${detail.degree.confirmedPoints} / ${detail.degree.totalPoints} 个知识点已确认`}
-                    />
-                    <ResearchBar
-                      label="深度"
-                      value={detail.degree.depth}
-                      hint={`${detail.degree.reviewedPoints} 个知识点已复习，按平均 3 次封顶`}
-                    />
-                    <ResearchBar
-                      label="平均掌握"
-                      value={detail.degree.mastery}
-                      hint="可提取性与自评准确率的加权平均"
-                    />
+                    <div className="research-bars">
+                      <ResearchBar
+                        label="广度"
+                        value={detail.degree.breadth}
+                        hint={`${detail.degree.confirmedPoints} / ${detail.degree.totalPoints} 个知识点已确认`}
+                      />
+                      <ResearchBar
+                        label="深度"
+                        value={detail.degree.depth}
+                        hint={`${detail.degree.reviewedPoints} 个知识点已复习，按平均 3 次封顶`}
+                      />
+                      <ResearchBar
+                        label="平均掌握"
+                        value={detail.degree.mastery}
+                        hint="可提取性与自评准确率的加权平均"
+                      />
+                    </div>
                   </div>
-                </div>
+                ) : null}
 
-                <section className="section">
-                  <div className="section-head">
-                    <h2>节点</h2>
-                    <span className="section-count">{detail.nodes.length}</span>
-                  </div>
+                {viewMode === 'canvas' ? (
+                  <>
+                    <div className="sets-canvas-meta">
+                      <span className="tag tone-outline">{percent(detail.degree.score)}% · {detail.degree.level}</span>
+                      <span className="muted">{detail.nodes.length} 个节点 · {detail.edges.length} 条关系</span>
+                    </div>
+                    <SetCanvas
+                      nodes={detail.nodes}
+                      edges={detail.edges}
+                      onSavePositions={savePositions}
+                      onAddEdge={addCanvasEdge}
+                      onRemoveEdge={removeEdge}
+                      onRemoveNode={removeNode}
+                    />
+                    {addNodeBar}
+                  </>
+                ) : (
+                  <>
+                    <section className="section">
+                      <div className="section-head">
+                        <h2>节点</h2>
+                        <span className="section-count">{detail.nodes.length}</span>
+                      </div>
 
-                  <ul className="list">
-                    {detail.nodes.map(node => (
-                      <li key={node.id} className="row">
-                        <div className="row-main static">
-                          <span className={`tag ${node.kind === 'point' ? 'tone-success' : 'tone-outline'}`}>
-                            {node.kind === 'point' ? '知识点' : '载体'}
-                          </span>
-                          <span className="row-body">
-                            <span className="row-title">
-                              <span className="row-title-text">{node.title}</span>
-                              {nodeStatusTag(node)}
+                      <ul className="list">
+                        {detail.nodes.map(node => (
+                          <li key={node.id} className="row">
+                            <div className="row-main static">
+                              <span className={`tag ${node.kind === 'point' ? 'tone-success' : 'tone-outline'}`}>
+                                {node.kind === 'point' ? '知识点' : '载体'}
+                              </span>
+                              <span className="row-body">
+                                <span className="row-title">
+                                  <span className="row-title-text">{node.title}</span>
+                                  {nodeStatusTag(node)}
+                                </span>
+                                <span className="row-meta">{node.subtitle}</span>
+                              </span>
+                            </div>
+                            <button
+                              className="button sm ghost"
+                              type="button"
+                              onClick={() => void removeNode(node.id)}
+                              disabled={busy}
+                            >
+                              移除
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {detail.nodes.length === 0 ? (
+                        <p className="note-empty">还没有节点，从下方加入知识点或整本载体。</p>
+                      ) : null}
+
+                      {addNodeBar}
+                    </section>
+
+                    <section className="section">
+                      <div className="section-head">
+                        <h2>关系</h2>
+                        <span className="section-count">{detail.edges.length}</span>
+                      </div>
+
+                      <ul className="list">
+                        {detail.edges.map(item => (
+                          <li key={item.id} className="row relation-row">
+                            <span className="relation-line">
+                              <span className="tag tone-outline">
+                                {item.kind === 'prereq' ? '前置' : '相关'}
+                              </span>
+                              <span className="relation-node" title={describeEdge(item)}>
+                                {nodeTitle(item.sourceId)}
+                              </span>
+                              <span className="relation-arrow">→</span>
+                              <span className="relation-node">{nodeTitle(item.targetId)}</span>
                             </span>
-                            <span className="row-meta">{node.subtitle}</span>
-                          </span>
-                        </div>
-                        <button
-                          className="button sm ghost"
-                          type="button"
-                          onClick={() => void removeNode(node.id)}
-                          disabled={busy}
-                        >
-                          移除
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {detail.nodes.length === 0 ? (
-                    <p className="note-empty">还没有节点，从下方加入知识点或整本载体。</p>
-                  ) : null}
-
-                  <div className="sets-add">
-                    <select
-                      className="select"
-                      value={addValue}
-                      onChange={event => setAddValue(event.target.value)}
-                      aria-label="选择要加入的节点"
-                    >
-                      <option value="">选择知识点或载体…</option>
-                      <optgroup label="载体">
-                        {options.carriers.map(carrier => (
-                          <option key={carrier.id} value={`carrier:${carrier.id}`}>
-                            {carrier.title}
-                          </option>
+                            <button
+                              className="button sm ghost"
+                              type="button"
+                              onClick={() => void removeEdge(item.id)}
+                              disabled={busy}
+                            >
+                              移除
+                            </button>
+                          </li>
                         ))}
-                      </optgroup>
-                      <optgroup label="知识点">
-                        {options.points.map(point => (
-                          <option key={point.id} value={`point:${point.id}`}>
-                            {point.title} · {point.carrierTitle}
-                          </option>
-                        ))}
-                      </optgroup>
-                    </select>
-                    <button
-                      className="button sm"
-                      type="button"
-                      onClick={() => void addNode()}
-                      disabled={busy || !addValue}
-                    >
-                      添加
-                    </button>
-                  </div>
-                </section>
+                      </ul>
 
-                <section className="section">
-                  <div className="section-head">
-                    <h2>关系</h2>
-                    <span className="section-count">{detail.edges.length}</span>
-                  </div>
+                      {detail.edges.length === 0 ? <p className="note-empty">还没有关系。</p> : null}
 
-                  <ul className="list">
-                    {detail.edges.map(item => (
-                      <li key={item.id} className="row relation-row">
-                        <span className="relation-line">
-                          <span className="tag tone-outline">
-                            {item.kind === 'prereq' ? '前置' : '相关'}
-                          </span>
-                          <span className="relation-node" title={describeEdge(item)}>
-                            {nodeTitle(item.sourceId)}
-                          </span>
-                          <span className="relation-arrow">→</span>
-                          <span className="relation-node">{nodeTitle(item.targetId)}</span>
-                        </span>
-                        <button
-                          className="button sm ghost"
-                          type="button"
-                          onClick={() => void removeEdge(item.id)}
-                          disabled={busy}
+                      <div className="sets-edge-form">
+                        <select
+                          className="select"
+                          value={edge.sourceId}
+                          onChange={event => setEdge({ ...edge, sourceId: event.target.value })}
+                          aria-label="关系起点"
                         >
-                          移除
+                          <option value="">起点节点</option>
+                          {relationNodes.map(node => (
+                            <option key={node.id} value={node.id}>
+                              {node.title}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          className="select"
+                          value={edge.kind}
+                          onChange={event =>
+                            setEdge({ ...edge, kind: event.target.value as SetEdgeKind })
+                          }
+                          aria-label="关系类型"
+                        >
+                          <option value="related">相关</option>
+                          <option value="prereq">前置</option>
+                        </select>
+                        <select
+                          className="select"
+                          value={edge.targetId}
+                          onChange={event => setEdge({ ...edge, targetId: event.target.value })}
+                          aria-label="关系终点"
+                        >
+                          <option value="">目标节点</option>
+                          {relationNodes.map(node => (
+                            <option key={node.id} value={node.id}>
+                              {node.title}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          className="button sm"
+                          type="button"
+                          onClick={() => void addEdge()}
+                          disabled={busy || !edge.sourceId || !edge.targetId}
+                        >
+                          添加关系
                         </button>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {detail.edges.length === 0 ? <p className="note-empty">还没有关系。</p> : null}
-
-                  <div className="sets-edge-form">
-                    <select
-                      className="select"
-                      value={edge.sourceId}
-                      onChange={event => setEdge({ ...edge, sourceId: event.target.value })}
-                      aria-label="关系起点"
-                    >
-                      <option value="">起点节点</option>
-                      {relationNodes.map(node => (
-                        <option key={node.id} value={node.id}>
-                          {node.title}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="select"
-                      value={edge.kind}
-                      onChange={event =>
-                        setEdge({ ...edge, kind: event.target.value as SetEdgeKind })
-                      }
-                      aria-label="关系类型"
-                    >
-                      <option value="related">相关</option>
-                      <option value="prereq">前置</option>
-                    </select>
-                    <select
-                      className="select"
-                      value={edge.targetId}
-                      onChange={event => setEdge({ ...edge, targetId: event.target.value })}
-                      aria-label="关系终点"
-                    >
-                      <option value="">目标节点</option>
-                      {relationNodes.map(node => (
-                        <option key={node.id} value={node.id}>
-                          {node.title}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      className="button sm"
-                      type="button"
-                      onClick={() => void addEdge()}
-                      disabled={busy || !edge.sourceId || !edge.targetId}
-                    >
-                      添加关系
-                    </button>
-                  </div>
-                </section>
+                      </div>
+                    </section>
+                  </>
+                )}
               </>
             ) : (
               <div className="empty-state">

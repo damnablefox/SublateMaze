@@ -24,6 +24,8 @@ export interface SetNodeRecord {
   kind: SetNodeKind
   refId: string
   position: number
+  x?: number
+  y?: number
   createdAt: string
 }
 
@@ -69,6 +71,8 @@ interface NodeRow {
   ref_id: string
   position: number
   created_at: string
+  x: number | null
+  y: number | null
   point_title: string | null
   point_status: string | null
   point_carrier_title: string | null
@@ -94,6 +98,8 @@ interface NodeBaseRow {
   ref_id: string
   position: number
   created_at: string
+  x: number | null
+  y: number | null
 }
 
 interface StatsRow {
@@ -135,6 +141,8 @@ function mapNode(row: NodeRow): SetNodeView {
       kind,
       refId: row.ref_id,
       position: row.position,
+      x: row.x ?? undefined,
+      y: row.y ?? undefined,
       createdAt: row.created_at,
       title,
       subtitle: carrier ? `知识点 · ${carrier}` : '知识点',
@@ -152,6 +160,8 @@ function mapNode(row: NodeRow): SetNodeView {
     kind,
     refId: row.ref_id,
     position: row.position,
+    x: row.x ?? undefined,
+    y: row.y ?? undefined,
     createdAt: row.created_at,
     title: row.carrier_title ?? '已失效的载体',
     subtitle: `${label} · ${pages} 页`,
@@ -177,6 +187,8 @@ function mapNodeBase(row: NodeBaseRow): SetNodeRecord {
     kind: row.kind as SetNodeKind,
     refId: row.ref_id,
     position: row.position,
+    x: row.x ?? undefined,
+    y: row.y ?? undefined,
     createdAt: row.created_at,
   }
 }
@@ -200,7 +212,7 @@ function toReviewState(row: StatsRow): ReviewState | undefined {
 }
 
 const NODE_SELECT = `
-  SELECT sn.id, sn.set_id, sn.kind, sn.ref_id, sn.position, sn.created_at,
+  SELECT sn.id, sn.set_id, sn.kind, sn.ref_id, sn.position, sn.created_at, sn.x, sn.y,
          kp.title AS point_title, kp.status AS point_status,
          cp.title AS point_carrier_title,
          c2.title AS carrier_title, c2.kind AS carrier_kind, c2.page_count AS carrier_pages,
@@ -314,6 +326,27 @@ export class SetStore {
     this.db.prepare('DELETE FROM set_nodes WHERE id = ? AND set_id = ?').run(nodeId, setId)
   }
 
+  /** 批量更新画布坐标；不属于该集合的节点被忽略。 */
+  updatePositions(
+    setId: string,
+    positions: { id: string; x: number; y: number }[],
+  ): void {
+    const update = this.db.prepare(
+      'UPDATE set_nodes SET x = ?, y = ? WHERE id = ? AND set_id = ?',
+    )
+
+    this.db.exec('BEGIN')
+    try {
+      for (const item of positions) {
+        update.run(item.x, item.y, item.id, setId)
+      }
+      this.db.exec('COMMIT')
+    } catch (error) {
+      this.db.exec('ROLLBACK')
+      throw error
+    }
+  }
+
   addEdge(
     setId: string,
     input: { sourceId: string; targetId: string; kind: SetEdgeKind },
@@ -402,7 +435,7 @@ export class SetStore {
   private findNode(setId: string, kind: SetNodeKind, refId: string): SetNodeRecord | undefined {
     const row = this.db
       .prepare(
-        `SELECT id, set_id, kind, ref_id, position, created_at
+        `SELECT id, set_id, kind, ref_id, position, created_at, x, y
          FROM set_nodes WHERE set_id = ? AND kind = ? AND ref_id = ?`,
       )
       .get(setId, kind, refId) as NodeBaseRow | undefined
@@ -413,7 +446,7 @@ export class SetStore {
   private findNodeById(setId: string, nodeId: string): SetNodeRecord | undefined {
     const row = this.db
       .prepare(
-        `SELECT id, set_id, kind, ref_id, position, created_at
+        `SELECT id, set_id, kind, ref_id, position, created_at, x, y
          FROM set_nodes WHERE set_id = ? AND id = ?`,
       )
       .get(setId, nodeId) as NodeBaseRow | undefined

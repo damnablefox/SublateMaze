@@ -33,10 +33,10 @@ afterEach(() => {
 })
 
 describe('storage-sqlite Agent 会话仓储', () => {
-  it('迁移到版本 10，事件按 seq 追加', () => {
+  it('迁移到版本 11，事件按 seq 追加', () => {
     const sqlite = open(tempPath())
 
-    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(10)
+    expect((sqlite.db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version).toBe(11)
 
     const session = sqlite.agentSessions.create('学习线性代数', 1000)
     const first = sqlite.agentSessions.append(session.id, 'turn', { tool: 'demo.echo' })

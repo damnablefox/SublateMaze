@@ -371,3 +371,9 @@ CREATE TABLE IF NOT EXISTS set_edges (
 
 CREATE INDEX IF NOT EXISTS idx_set_edges_set ON set_edges (set_id);
 `
+
+/** 迁移 011：专业集节点画布坐标。 */
+export const MIGRATION_011 = `
+ALTER TABLE set_nodes ADD COLUMN x REAL;
+ALTER TABLE set_nodes ADD COLUMN y REAL;
+`

@@ -22,6 +22,8 @@ interface SetNodeLike {
   kind: SetNodeKind
   refId: string
   position: number
+  x?: number
+  y?: number
   createdAt: string
   title: string
   subtitle?: string
@@ -52,6 +54,7 @@ interface SetStoreLike {
   list(): SetSummaryLike[]
   addNodes(setId: string, nodes: { kind: SetNodeKind; refId: string }[]): unknown[]
   removeNode(setId: string, nodeId: string): void
+  updatePositions(setId: string, positions: { id: string; x: number; y: number }[]): void
   addEdge(
     setId: string,
     input: { sourceId: string; targetId: string; kind: SetEdgeKind },
@@ -164,6 +167,35 @@ export class SetsService {
     return this.detail(id)
   }
 
+  updatePositions(
+    id: string,
+    positions: { nodeId: string; x: number; y: number }[],
+  ): SetDetail {
+    if (positions.length === 0) throw new Error('没有要保存的画布坐标')
+    if (positions.length > MAX_NODES) throw new Error(`一次最多保存 ${MAX_NODES} 个坐标`)
+
+    for (const position of positions) {
+      if (
+        !Number.isFinite(position.x)
+        || !Number.isFinite(position.y)
+        || Math.abs(position.x) > 1_000_000
+        || Math.abs(position.y) > 1_000_000
+      ) {
+        throw new Error('画布坐标超出允许范围')
+      }
+    }
+
+    this.db.sets.updatePositions(
+      id,
+      positions.map(position => ({
+        id: position.nodeId,
+        x: position.x,
+        y: position.y,
+      })),
+    )
+    return this.detail(id)
+  }
+
   addEdge(
     id: string,
     input: { sourceId: string; targetId: string; kind: SetEdgeKind },
@@ -235,6 +267,20 @@ const RemoveNodeInput = z.object({
   nodeId: z.string().min(1),
 })
 
+const PositionsInput = z.object({
+  id: z.string().min(1),
+  positions: z
+    .array(
+      z.object({
+        nodeId: z.string().min(1),
+        x: z.number().finite().min(-1_000_000).max(1_000_000),
+        y: z.number().finite().min(-1_000_000).max(1_000_000),
+      }),
+    )
+    .min(1)
+    .max(MAX_NODES),
+})
+
 const EdgeInput = z.object({
   id: z.string().min(1),
   sourceId: z.string().min(1),
@@ -270,6 +316,10 @@ function registerChannels(ctx: Context, sets: SetsService, ipc: IpcLike): void {
   register('set:remove-node', (input: unknown) => {
     const data = RemoveNodeInput.parse(input)
     return sets.removeNode(data.id, data.nodeId)
+  })
+  register('set:update-positions', (input: unknown) => {
+    const data = PositionsInput.parse(input)
+    return sets.updatePositions(data.id, data.positions)
   })
   register('set:add-edge', (input: unknown) => {
     const data = EdgeInput.parse(input)

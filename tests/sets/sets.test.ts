@@ -153,6 +153,35 @@ describe('sets 插件', () => {
     ).toThrow('关系只能建立在知识点之间')
   })
 
+  it('批量保存画布坐标并返回详情', () => {
+    const { sets, points } = setup()
+    const set = sets.create({ title: '群论' })
+    const detail = sets.addNodes(set.set.id, [
+      { kind: 'point', refId: points[0]!.id },
+      { kind: 'point', refId: points[1]!.id },
+    ])
+
+    const updated = sets.updatePositions(
+      set.set.id,
+      detail.nodes.map((node, index) => ({ nodeId: node.id, x: index * 300, y: index * 120 })),
+    )
+
+    expect(updated.nodes.map(node => [node.x, node.y])).toEqual([
+      [0, 0],
+      [300, 120],
+    ])
+  })
+
+  it('画布坐标超出范围时拒绝', () => {
+    const { sets, points } = setup()
+    const set = sets.create({ title: '群论' })
+    const detail = sets.addNodes(set.set.id, [{ kind: 'point', refId: points[0]!.id }])
+
+    expect(() =>
+      sets.updatePositions(set.set.id, [{ nodeId: detail.nodes[0]!.id, x: 2_000_000, y: 0 }]),
+    ).toThrow()
+  })
+
   it('选项返回未删除载体与其知识点', () => {
     const { sets, carrier, points } = setup()
 
