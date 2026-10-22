@@ -17,13 +17,14 @@ import type {
 } from '../env'
 
 const NODE_WIDTH = 248
-const NODE_HEIGHT = 96
-const HEADER_HEIGHT = 24
-const SUBTITLE_HEIGHT = 20
+const NODE_HEIGHT = 92
+const HEADER_HEIGHT = 22
+const SUBTITLE_HEIGHT = 18
 const PIN_ROW_HEIGHT = 22
 const PIN_TOP = HEADER_HEIGHT + SUBTITLE_HEIGHT + PIN_ROW_HEIGHT / 2
 const MIN_SCALE = 0.4
 const MAX_SCALE = 1.8
+const ROUTING_KEY = 'sublate-canvas-routing'
 const COMMENT_MIN_WIDTH = 160
 const COMMENT_MIN_HEIGHT = 80
 const COMMENT_MAX_WIDTH = 1200
@@ -31,6 +32,8 @@ const COMMENT_MAX_HEIGHT = 1000
 const COMMENT_DEFAULT_WIDTH = 360
 const COMMENT_DEFAULT_HEIGHT = 200
 const COMMENT_COLORS: SetCommentColor[] = ['amber', 'blue', 'green', 'red']
+
+type RoutingMode = 'manhattan' | 'diagonal'
 
 interface Position {
   x: number
@@ -178,10 +181,9 @@ function BookIcon() {
 }
 
 /**
- * 芯片电路板式正交路径：输出焊盘水平引出，跨过通道，再水平进入输入焊盘。
- * 控制点算法参考 UE 蓝图连线的水平切线，改为直角折线。
+ * 曼哈顿走线：输出焊盘水平引出，跨过垂直通道，再水平进入输入焊盘。
  */
-function orthPath(source: Position, target: Position, lane: number): string {
+function manhattanPath(source: Position, target: Position, lane: number): string {
   const stub = 18
   const start = source
   const first = { x: source.x + stub, y: source.y }
@@ -198,7 +200,58 @@ function orthPath(source: Position, target: Position, lane: number): string {
     points.push({ x: laneX, y: first.y }, { x: laneX, y: last.y }, last, target)
   }
 
-  return roundedPath(points, 8)
+  return roundedPath(points, 5)
+}
+
+/**
+ * 45° 地铁走线：水平引出后优先用 45° 斜线完成大部分高差。
+ */
+function diagonalPath(source: Position, target: Position, lane: number): string {
+  const stub = 18
+  const start = source
+  const first = { x: source.x + stub, y: source.y }
+  const last = { x: target.x - stub, y: target.y }
+  const points: Position[] = [start, first]
+
+  if (Math.abs(first.y - last.y) < 1) {
+    points.push(last, target)
+  } else if (first.x <= last.x - 24) {
+    const dx = last.x - first.x
+    const dy = last.y - first.y
+    const sign = dy >= 0 ? 1 : -1
+
+    if (Math.abs(dy) <= dx) {
+      points.push({ x: first.x + dx - Math.abs(dy), y: first.y }, last, target)
+    } else {
+      points.push({ x: last.x, y: first.y + sign * dx }, last, target)
+    }
+  } else {
+    const laneX = Math.max(first.x, last.x) + 40 + lane
+    const dy = last.y - first.y
+    const sign = dy >= 0 ? 1 : -1
+    const run = Math.min(Math.abs(dy), laneX - first.x)
+
+    points.push(
+      { x: laneX - run, y: first.y },
+      { x: laneX, y: first.y + sign * run },
+      { x: laneX, y: last.y },
+      last,
+      target,
+    )
+  }
+
+  return roundedPath(points, 4)
+}
+
+function routePath(
+  source: Position,
+  target: Position,
+  lane: number,
+  mode: RoutingMode,
+): string {
+  return mode === 'diagonal'
+    ? diagonalPath(source, target, lane)
+    : manhattanPath(source, target, lane)
 }
 
 function roundedPath(points: Position[], radius: number): string {
@@ -273,6 +326,13 @@ export function SetCanvas({
   const [pickerPosition, setPickerPosition] = useState<Position>({ x: 0, y: 0 })
   const [editingCommentId, setEditingCommentId] = useState<string>()
   const [commentDraft, setCommentDraft] = useState('')
+  const [routing, setRouting] = useState<RoutingMode>(() => {
+    try {
+      return window.localStorage.getItem(ROUTING_KEY) === 'diagonal' ? 'diagonal' : 'manhattan'
+    } catch {
+      return 'manhattan'
+    }
+  })
   const interactionRef = useRef<Interaction>()
   const saveRef = useRef(onSavePositions)
   const updateCommentRef = useRef(onUpdateComment)
@@ -384,6 +444,14 @@ export function SetCanvas({
     }
     applyComments(next)
   }, [comments])
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ROUTING_KEY, routing)
+    } catch {
+      // 存储不可用时仅当前会话生效
+    }
+  }, [routing])
 
   useEffect(() => {
     const element = containerRef.current
@@ -949,10 +1017,11 @@ export function SetCanvas({
                 key={edge.id}
                 data-edge-id={edge.id}
                 className={`bp-edge ${edge.kind} from-${sourceNode.kind}`}
-                d={orthPath(
+                d={routePath(
                   pinAnchor(sourcePosition, sourcePin),
                   pinAnchor(targetPosition, targetPin),
                   lane,
+                  routing,
                 )}
                 markerEnd={edge.kind === 'prereq' ? 'url(#bp-arrow-exec)' : undefined}
                 onPointerDown={event => event.stopPropagation()}
@@ -963,10 +1032,10 @@ export function SetCanvas({
           {linkPreview && previewPosition && previewPin ? (
             <path
               className={`bp-edge bp-link-preview ${linkPreview.kind} from-${previewNode?.kind ?? 'point'}`}
-              d={orthPath(pinAnchor(previewPosition, previewPin), {
+              d={routePath(pinAnchor(previewPosition, previewPin), {
                 x: linkPreview.x,
                 y: linkPreview.y,
-              }, 0)}
+              }, 0, routing)}
             />
           ) : null}
         </svg>
@@ -1048,6 +1117,22 @@ export function SetCanvas({
         <span className="bp-legend">
           <i className="bp-legend-mark data" />
           数据
+        </span>
+        <span className="bp-route-switch" role="group" aria-label="连线走线风格">
+          <button
+            type="button"
+            className={routing === 'manhattan' ? 'active' : ''}
+            onClick={() => setRouting('manhattan')}
+          >
+            90°
+          </button>
+          <button
+            type="button"
+            className={routing === 'diagonal' ? 'active' : ''}
+            onClick={() => setRouting('diagonal')}
+          >
+            45°
+          </button>
         </span>
         <span className="bp-toolbar-divider" />
         <button type="button" className="bp-button" onClick={autoLayout}>
