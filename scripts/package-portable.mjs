@@ -32,6 +32,7 @@ function removeOldEntries(directory, keepName) {
   }
 }
 
+const dirOnly = process.argv.includes('--dir-only')
 const version = readVersion()
 const folderName = `SublateMaze-${version}-windows-x64-portable`
 const zipName = `${folderName}.zip`
@@ -55,41 +56,32 @@ if (!existsSync(resolve(packedOut, 'main/index.js'))) {
   cpSync(desktopOut, packedOut, { recursive: true })
 }
 
-run(
-  'pnpm',
-  [
-    '--filter',
-    '@sublate/desktop',
-    'exec',
-    'electron-builder',
-    '--win',
-    'zip',
-    '--publish',
-    'never',
-    '--config',
-    'electron-builder.yml',
-  ],
-  root,
-)
+const builderArgs = ['--filter', '@sublate/desktop', 'exec', 'electron-builder', '--win']
+if (dirOnly) builderArgs.push('--dir')
+builderArgs.push('--publish', 'never', '--config', 'electron-builder.yml')
+run('pnpm', builderArgs, root)
 
 const unpacked = resolve(root, '.pack/dist/win-unpacked')
 const zip = resolve(root, '.pack/dist', zipName)
 
 if (!existsSync(unpacked)) throw new Error(`未找到打包目录：${unpacked}`)
-if (!existsSync(zip)) throw new Error(`未找到打包产物：${zip}`)
+if (!dirOnly && !existsSync(zip)) throw new Error(`未找到打包产物：${zip}`)
 
 mkdirSync(buildRoot, { recursive: true })
-mkdirSync(releaseRoot, { recursive: true })
 
 const targetFolder = resolve(buildRoot, folderName)
-const targetZip = resolve(releaseRoot, zipName)
 
 removeOldEntries(buildRoot, folderName)
-removeOldEntries(releaseRoot, zipName)
 
 rmSync(targetFolder, { recursive: true, force: true })
 cpSync(unpacked, targetFolder, { recursive: true })
-cpSync(zip, targetZip)
 
 console.log(`便携目录：${targetFolder}`)
-console.log(`发布压缩包：${targetZip}`)
+
+if (!dirOnly) {
+  mkdirSync(releaseRoot, { recursive: true })
+  const targetZip = resolve(releaseRoot, zipName)
+  removeOldEntries(releaseRoot, zipName)
+  cpSync(zip, targetZip)
+  console.log(`发布压缩包：${targetZip}`)
+}

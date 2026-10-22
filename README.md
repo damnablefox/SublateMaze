@@ -37,7 +37,8 @@
 ## 打包便携版
 
 ```powershell
-pnpm package:portable
+pnpm package:dir        # 仅更新便携目录，供本地运行测试（不生成 zip）
+pnpm package:portable   # 生成便携目录与发布 zip
 ```
 
 产物位于工作区 `构建产物/`：目录 `SublateMaze-<版本>-windows-x64-portable/` 与发布压缩包 `项目发布产物/SublateMaze-<版本>-windows-x64-portable.zip`。解压后运行 `SublateMaze.exe`，数据保存在 exe 同级的 `.vault` 与 `.electron-data`。打 `v*` 标签会触发 `.github/workflows/release.yml` 上传 Release。

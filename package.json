@@ -1,6 +1,6 @@
 {
   "name": "sublatemaze",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "本地优先的个人学习平台与知识库管理系统",
   "license": "MIT",
@@ -13,6 +13,7 @@
     "dev:kernel": "tsx scripts/check-kernel.ts",
     "bench:vector": "tsx scripts/bench-vector.ts",
     "package:portable": "node scripts/package-portable.mjs",
+    "package:dir": "node scripts/package-portable.mjs --dir-only",
     "build:native": "napi build --platform --release --cwd crates/sublate-native",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "oxlint",
